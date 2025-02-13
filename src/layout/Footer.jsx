@@ -13,8 +13,8 @@ const Footer = () => {
     <footer className="bg-white text-gray-900 px-4 py-8">
       <div className="max-w-7xl mx-auto">
         {/* Logo and Social Icons Row */}
-        <div className="flex justify-between items-center pb-8 mb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Buy-Item</h2>
+        <div className="flex flex-col items-start md:flex-row md:justify-between pb-8 mb-4 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">Buy-Item</h2>
           <div className="flex items-center space-x-6">
             <a href="#" className="text-white bg-blue-500 p-2 rounded-full hover:bg-blue-600 transition-colors">
               <Facebook className="w-5 h-5" />
