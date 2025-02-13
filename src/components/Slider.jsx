@@ -1,75 +1,103 @@
-import React from 'react';
+import { memo } from 'react';
 import SlickSlider from 'react-slick';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-class CustomArrow extends React.Component {
-  render() {
-    const { className, onClick, direction } = this.props;
-    return (
-      <button
-        className={`${className} absolute z-10 top-1/2 transform -translate-y-1/2 
-        ${direction === 'next' ? 'right-4' : 'left-4'}
-        bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg
-        transition duration-200 hover:scale-110`}
-        onClick={onClick}
-      >
-        {direction === 'next' ? (
-          <ChevronRight className="h-6 w-6" />
-        ) : (
-          <ChevronLeft className="h-6 w-6" />
-        )}
-      </button>
-    );
-  }
-}
+const CustomArrow = memo(({ className, onClick, direction }) => (
+  <button
+    className={`absolute z-20 top-1/2 -translate-y-1/2 
+    ${direction === 'next' ? 'right-4 md:right-8' : 'left-4 md:left-8'}
+    w-[3.5rem] h-[3.5rem] md:w-16 md:h-16 flex items-center justify-center
+    text-white/90 hover:text-white
+    rounded-full
+    transition-all duration-300 hover:scale-110
+    group`}
+    onClick={onClick}
+    aria-label={direction === 'next' ? 'Next slide' : 'Previous slide'}
+  >
+    {direction === 'next' ? (
+      <ChevronRight className="h-8 w-8 md:h-10 md:w-10 transition-transform group-hover:translate-x-0.5" />
+    ) : (
+      <ChevronLeft className="h-8 w-8 md:h-10 md:w-10 transition-transform group-hover:-translate-x-0.5" />
+    )}
+  </button>
+));
 
-class Slider extends React.Component {
-  render() {
-    const settings = {
-      dots: true,
-      infinite: true,
-      speed: 500,
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      autoplay: true,
-      autoplaySpeed: 5000,
-      nextArrow: <CustomArrow direction="next" />,
-      prevArrow: <CustomArrow direction="prev" />,
-      dotsClass: "slick-dots custom-dots",
-      customPaging: (i) => (
-        <div className="w-3 h-3 mx-1 rounded-full bg-white/50 hover:bg-white/80 transition-all duration-200" />
-      ),
-    };
+const Slider = () => {
+  const slides = [
+    {
+      image: "https://picsum.photos/seed/1/640/960",
+      imageLarge: "https://picsum.photos/seed/1/1920/1080",
+      title: "Spring Collection 2024",
+      description: "Discover our latest fashion trends",
+      button: "Shop Now"
+    },
+    {
+      image: "https://picsum.photos/seed/2/640/960",
+      imageLarge: "https://picsum.photos/seed/2/1920/1080",
+      title: "Summer Essentials",
+      description: "Get ready for the perfect summer",
+      button: "View Collection"
+    },
+    {
+      image: "https://picsum.photos/seed/3/640/960",
+      imageLarge: "https://picsum.photos/seed/3/1920/1080",
+      title: "New Arrivals",
+      description: "Be the first to explore our newest items",
+      button: "Explore"
+    }
+  ];
 
-    return (
-      <div className="relative">
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    nextArrow: <CustomArrow direction="next" />,
+    prevArrow: <CustomArrow direction="prev" />,
+    dotsClass: "slick-dots custom-dots",
+    customPaging: () => (
+      <div className="w-2 h-2 mx-1 rounded-full bg-white/50 hover:bg-white/80 transition-all duration-200" />
+    ),
+  };
+
+  return (
+    <div className="relative">
+      <div className="hero-section">
         <SlickSlider {...settings}>
-          {this.props.slides.map((slide, index) => (
-            <div key={index} className="relative h-[60vh] md:h-[80vh]">
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="text-center text-white px-4">
-                  <h2 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h2>
-                  <p className="text-lg md:text-xl mb-8">{slide.description}</p>
-                  {slide.button && (
-                    <button className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-full text-lg transition duration-300">
-                      {slide.button}
-                    </button>
-                  )}
+          {slides.map((slide, index) => (
+            <div key={index} className="relative h-[calc(100vh-4rem)]">
+              <picture>
+                <source media="(min-width: 640px)" srcSet={slide.imageLarge} />
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 flex items-center justify-center">
+                <div className="text-center text-white px-4 max-w-xs sm:max-w-2xl mx-auto">
+                  <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 sm:mb-4 tracking-tight">
+                    {slide.title}
+                  </h1>
+                  <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-8 text-gray-100">
+                    {slide.description}
+                  </p>
+                  <button className="bg-primary hover:bg-primary-dark text-white px-6 py-2 sm:px-8 sm:py-3 rounded-full text-sm sm:text-lg font-medium transition duration-300 transform hover:scale-105">
+                    {slide.button}
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </SlickSlider>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default Slider; 
