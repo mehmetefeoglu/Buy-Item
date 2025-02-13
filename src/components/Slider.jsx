@@ -63,6 +63,19 @@ const Slider = () => {
     customPaging: () => (
       <div className="w-2 h-2 mx-1 rounded-full bg-white/50 hover:bg-white/80 transition-all duration-200" />
     ),
+    accessibility: true,
+    focusOnSelect: false,
+    swipeToSlide: true,
+    adaptiveHeight: true,
+    responsive: [
+      {
+        breakpoint: 9999,
+        settings: {
+          arrows: true,
+          dots: true
+        }
+      }
+    ]
   };
 
   return (
@@ -70,7 +83,13 @@ const Slider = () => {
       <div className="hero-section">
         <SlickSlider {...settings}>
           {slides.map((slide, index) => (
-            <div key={index} className="relative h-[calc(100vh-4rem)]">
+            <div 
+              key={index} 
+              className="relative h-[calc(100vh-4rem)]"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Slide ${index + 1} of ${slides.length}`}
+            >
               <picture>
                 <source media="(min-width: 640px)" srcSet={slide.imageLarge} />
                 <img
@@ -79,15 +98,21 @@ const Slider = () => {
                   className="w-full h-full object-cover"
                 />
               </picture>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 flex items-center justify-center">
+              <div 
+                className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 flex items-center justify-center"
+                aria-hidden="true"
+              >
                 <div className="text-center text-white px-4 max-w-xs sm:max-w-2xl mx-auto">
-                  <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 sm:mb-4 tracking-tight">
+                  <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 sm:mb-4 tracking-tight">
                     {slide.title}
-                  </h1>
+                  </h2>
                   <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-8 text-gray-100">
                     {slide.description}
                   </p>
-                  <button className="bg-primary hover:bg-primary-dark text-white px-6 py-2 sm:px-8 sm:py-3 rounded-full text-sm sm:text-lg font-medium transition duration-300 transform hover:scale-105">
+                  <button 
+                    className="bg-primary hover:bg-primary-dark text-white px-6 py-2 sm:px-8 sm:py-3 rounded-full text-sm sm:text-lg font-medium transition duration-300 transform hover:scale-105"
+                    aria-label={slide.button}
+                  >
                     {slide.button}
                   </button>
                 </div>
