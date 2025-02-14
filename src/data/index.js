@@ -72,60 +72,233 @@ export const headerData = {
         }
       ]
     },
-    categories: [
-      {
-        id: 1,
-        name: "Electronics",
-        image: "https://images.unsplash.com/photo-1498049794561-7780e7231661"
+    editorsPick: {
+      title: "EDITOR'S PICK",
+      categories: [
+        {
+          id: 1,
+          name: "MEN",
+          image: "https://images.unsplash.com/photo-1488161628813-04466f872be2?ixlib=rb-4.0.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80",
+          link: "/category/men"
+        },
+        {
+          id: 2,
+          name: "WOMEN",
+          image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+          link: "/category/women"
+        },
+        {
+          id: 3,
+          name: "ACCESSORIES",
+          image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?ixlib=rb-4.0.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1180&q=80",
+          link: "/category/accessories"
+        },
+        {
+          id: 4,
+          name: "KIDS",
+          image: "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?ixlib=rb-4.0.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
+          link: "/category/kid"
+        }
+      ]
+    },
+    products: {
+      title: "Featured Products",
+      items: [
+        {
+          id: 1,
+          image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 2,
+          image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 3,
+          image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 4,
+          image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 5,
+          image: "https://images.unsplash.com/photo-1505693314120-0d443867891c",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 6,
+          image: "https://images.unsplash.com/photo-1524758870432-af57e54afa26",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 7,
+          image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        },
+        {
+          id: 8,
+          image: "https://images.unsplash.com/photo-1505693314120-0d443867891c",
+          category: "Graphic Design",
+          department: "English Department",
+          price: 16.48,
+          discountedPrice: 6.48,
+          colors: [
+            { id: 1, color: "#23A6F0" },
+            { id: 2, color: "#23856D" },
+            { id: 3, color: "#8B5C41" },
+            { id: 4, color: "#252B42" }
+          ]
+        }
+      ]
+    },
+    carousel: {
+      slides: [
+        {
+          id: 1,
+          image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.1&auto=format&fit=crop&w=2000&q=80",
+          smallTitle: "SUMMER 2020",
+          title: "Vita Classic Product",
+          description: "We know how large objects will act, but things on a small scale",
+          price: 16.48,
+          buttonText: "ADD TO CART"
+        },
+        {
+          id: 2,
+          image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.1&auto=format&fit=crop&w=2000&q=80",
+          smallTitle: "SUMMER 2020",
+          title: "Vita Classic Product",
+          description: "We know how large objects will act, but things on a small scale",
+          price: 16.48,
+          buttonText: "ADD TO CART"
+        },
+        {
+          id: 3,
+          image: "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?ixlib=rb-4.0.1&auto=format&fit=crop&w=2000&q=80",
+          smallTitle: "SUMMER 2020",
+          title: "Vita Classic Product",
+          description: "We know how large objects will act, but things on a small scale",
+          price: 16.48,
+          buttonText: "ADD TO CART"
+        }
+      ]
+    },
+    neuralSection: {
+      smallTitle: "SUMMER 2020",
+      title: "Part of the Neural Universe",
+      description: "We know how large objects will act, but things on a small scale.",
+      buttons: {
+        primary: {
+          text: "BUY NOW",
+          link: "/buy"
+        },
+        secondary: {
+          text: "LEARN MORE",
+          link: "/learn"
+        }
       },
-      {
-        id: 2,
-        name: "Fashion",
-        image: "https://images.unsplash.com/photo-1445205170230-053b83016050"
-      },
-      {
-        id: 3,
-        name: "Home",
-        image: "https://images.unsplash.com/photo-1484101403633-562f891dc89a"
-      },
-      {
-        id: 4,
-        name: "Sports",
-        image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211"
-      }
-    ],
-    featuredProducts: [
-      {
-        id: 1,
-        name: "Wireless Headphones",
-        price: 99.99,
-        discount: 20,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-        category: "Electronics"
-      },
-      {
-        id: 2,
-        name: "Smart Watch",
-        price: 199.99,
-        discount: 15,
-        image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12",
-        category: "Electronics"
-      },
-      {
-        id: 3,
-        name: "Running Shoes",
-        price: 79.99,
-        discount: 10,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-        category: "Sports"
-      },
-      {
-        id: 4,
-        name: "Leather Bag",
-        price: 149.99,
-        discount: 25,
-        image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa",
-        category: "Fashion"
-      }
-    ]
+      image: "https://images.unsplash.com/photo-1516575334481-f85287c2c82d?ixlib=rb-4.0.1&auto=format&fit=crop&w=2000&q=80"
+    },
+    featuredArticles: {
+      subtitle: "Practice Advice",
+      title: "Featured Posts",
+      articles: [
+        {
+          id: 1,
+          image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+          isNew: true,
+          categories: ["Google", "Trending", "New"],
+          title: "Loudest à la Madison #1 (L'integral)",
+          description: "We focus on ergonomics and meeting you where you work. It's only a keystroke away.",
+          date: "22 April 2021",
+          comments: 10
+        },
+        {
+          id: 2,
+          image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+          isNew: true,
+          categories: ["Google", "Trending", "New"],
+          title: "Loudest à la Madison #1 (L'integral)",
+          description: "We focus on ergonomics and meeting you where you work. It's only a keystroke away.",
+          date: "22 April 2021",
+          comments: 10
+        },
+        {
+          id: 3,
+          image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+          isNew: true,
+          categories: ["Google", "Trending", "New"],
+          title: "Loudest à la Madison #1 (L'integral)",
+          description: "We focus on ergonomics and meeting you where you work. It's only a keystroke away.",
+          date: "22 April 2021",
+          comments: 10
+        }
+      ]
+    }
   }; 

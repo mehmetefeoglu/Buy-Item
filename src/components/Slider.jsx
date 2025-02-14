@@ -10,15 +10,15 @@ const CustomArrow = memo(({ className, onClick, direction }) => (
   <button
     className={`absolute z-20 top-1/2 -translate-y-1/2 
     ${direction === 'next' ? 'right-4 md:right-8' : 'left-4 md:left-8'}
-    w-10 h-10 flex items-center justify-center rounded-full
-    bg-white/80 hover:bg-white text-gray-800 hover:text-gray-900
-    transition-all duration-200 shadow-md`}
+    w-24 h-24 flex items-center justify-center
+    text-white hover:text-white/80
+    transition-all duration-200`}
     onClick={onClick}
   >
     {direction === 'next' ? (
-      <ChevronRight className="w-6 h-6" />
+      <ChevronRight className="w-14 h-14" />
     ) : (
-      <ChevronLeft className="w-6 h-6" />
+      <ChevronLeft className="w-14 h-14" />
     )}
   </button>
 ));
