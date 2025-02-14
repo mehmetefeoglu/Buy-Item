@@ -3,7 +3,7 @@ import { Clock, BarChart2, ChevronRight } from 'lucide-react';
 
 const ArticleCard = ({ article }) => {
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-8 md:mb-0">
       {/* Image Container */}
       <div className="relative w-full">
         <div className="aspect-square w-full">
