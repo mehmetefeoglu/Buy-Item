@@ -1,29 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ShoppingBag, 
-  Search, 
-  User, 
-  Menu, 
-  X, 
-  Phone,
-  Mail,
-  Instagram,
-  Youtube,
-  Facebook,
-  Twitter,
-  ChevronDown,
-  Heart
+  ShoppingBag, Search, User, Menu, X, Phone,
+  Mail, Instagram, Youtube, Facebook, Twitter,
+  ChevronDown, Heart
 } from 'lucide-react';
+import { headerData } from '../data/index';
 import Slider from '../components/Slider.jsx';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
 
-  const shopCategories = {
-    women: ['Bags', 'Belts', 'Cosmetics', 'Hats'],
-    men: ['Bags', 'Belts', 'Cosmetics', 'Hats']
+  // Icon mapping objesi
+  const IconMap = {
+    Instagram: Instagram,
+    Youtube: Youtube,
+    Facebook: Facebook,
+    Twitter: Twitter,
+    Phone: Phone,
+    Mail: Mail
   };
 
   return (
@@ -36,35 +32,31 @@ const Header = () => {
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span className="text-sm whitespace-nowrap">(225) 555-0118</span>
+                <span className="text-sm whitespace-nowrap">{headerData.topBar.contact.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span className="text-sm whitespace-nowrap">michelle.rivera@example.com</span>
+                <span className="text-sm whitespace-nowrap">{headerData.topBar.contact.email}</span>
               </div>
             </div>
 
             {/* Center Text - Hidden on smaller screens */}
             <div className="hidden lg:block text-sm font-medium">
-              Follow Us and get a chance to win 80% off
+              {headerData.topBar.promoText}
             </div>
 
             {/* Social Media */}
             <div className="flex items-center gap-4">
               <span className="text-sm whitespace-nowrap">Follow Us:</span>
               <div className="flex items-center gap-3">
-                <a href="#" className="hover:text-primary transition-colors">
-                  <Instagram className="h-4 w-4" />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors">
-                  <Youtube className="h-4 w-4" />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors">
-                  <Facebook className="h-4 w-4" />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors">
-                  <Twitter className="h-4 w-4" />
-                </a>
+                {headerData.topBar.socialLinks.map(({ id, icon, url }) => {
+                  const Icon = IconMap[icon];
+                  return (
+                    <a key={id} href={url} className="hover:text-primary transition-colors">
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -78,14 +70,20 @@ const Header = () => {
             {/* Logo and Nav Links */}
             <div className="flex items-center gap-8">
               <Link to="/" className="text-2xl font-bold text-primary whitespace-nowrap">
-                Buy-Item
+                {headerData.navigation.logo}
               </Link>
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
-                <Link to="/" className="text-gray-700 hover:text-primary transition-colors">
-                  Home
-                </Link>
+                {headerData.navigation.mainLinks.map(({ id, text, path }) => (
+                  <Link 
+                    key={id}
+                    to={path} 
+                    className="text-gray-700 hover:text-primary transition-colors"
+                  >
+                    {text}
+                  </Link>
+                ))}
                 
                 {/* Shop Dropdown */}
                 <div className="relative group">
@@ -100,7 +98,7 @@ const Header = () => {
                   {/* Shop Dropdown Menu */}
                   <div className="absolute top-full left-0 mt-2 w-[500px] bg-white shadow-lg rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="p-6 grid grid-cols-2 gap-8">
-                      {Object.entries(shopCategories).map(([category, items]) => (
+                      {Object.entries(headerData.navigation.shopCategories).map(([category, items]) => (
                         <div key={category}>
                           <h3 className="font-semibold text-gray-900 mb-4 capitalize">{category}</h3>
                           <ul className="space-y-2">
@@ -120,20 +118,6 @@ const Header = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Other Nav Links */}
-                <Link to="/about" className="text-gray-700 hover:text-primary transition-colors">
-                  About
-                </Link>
-                <Link to="/blog" className="text-gray-700 hover:text-primary transition-colors">
-                  Blog
-                </Link>
-                <Link to="/contact" className="text-gray-700 hover:text-primary transition-colors">
-                  Contact
-                </Link>
-                <Link to="/pages" className="text-gray-700 hover:text-primary transition-colors">
-                  Pages
-                </Link>
               </nav>
             </div>
 
@@ -201,42 +185,15 @@ const Header = () => {
             }`}
           >
             <nav className="py-4 space-y-2">
-              <Link
-                to="/"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Home
-              </Link>
-              <Link
-                to="/shop"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Shop
-              </Link>
-              <Link
-                to="/about"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                About
-              </Link>
-              <Link
-                to="/blog"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Blog
-              </Link>
-              <Link
-                to="/contact"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Contact
-              </Link>
-              <Link
-                to="/pages"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Pages
-              </Link>
+              {headerData.navigation.mainLinks.map(({ id, text, path }) => (
+                <Link
+                  key={id}
+                  to={path}
+                  className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
+                >
+                  {text}
+                </Link>
+              ))}
               <Link
                 to="/auth"
                 className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
