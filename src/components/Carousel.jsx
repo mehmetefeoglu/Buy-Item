@@ -42,7 +42,7 @@ const Carousel = ({ slides }) => {
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/60 z-10" />
       <SlickSlider {...settings}>
         {slides.map((slide) => (
-          <div key={slide.id} className="relative h-[1200px]">
+          <div key={slide.id} className="relative h-[1200px] md:h-[720px]">
             <img
               src={slide.image}
               alt={slide.title}
