@@ -73,8 +73,6 @@ const ShopPage = () => {
       <div className="px-4">
         <div className="flex flex-col md:flex-row md:flex-wrap md:justify-between gap-4">
           {Array.from({ length: 12 }, (_, i) => {
-            const product = shopData.products[i % 4];
-            // Çalışan Unsplash ID'leri
             const imageIds = [
               '1434389677669-e08b4cac3105',
               '1485462537746-965f33f7f6a7',
@@ -91,9 +89,16 @@ const ShopPage = () => {
             ];
             
             return {
-              ...product,
               id: i + 1,
+              name: `Floating Phone ${i + 1}`,
+              category: "English Department",
+              price: 15.35,
+              discountedPrice: 6.48,
               image: `https://images.unsplash.com/photo-${imageIds[i]}`,
+              colors: ["blue", "green", "orange", "purple"],
+              description: "Met minim Mollie non desert Alamo est sit cliquey dolor do met sent.",
+              reviews: 10,
+              availability: "In Stock"
             };
           }).map((product) => (
             <div key={product.id} className="w-full md:w-[48%] lg:w-[23%]">

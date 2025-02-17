@@ -106,17 +106,12 @@ export const homeData = {
     items: [
       {
         id: 1,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-        category: "Graphic Design",
-        department: "English Department",
+        name: "Graphic Design",
+        category: "English Department",
         price: 16.48,
         discountedPrice: 6.48,
-        colors: [
-          { id: 1, color: "#23A6F0" },
-          { id: 2, color: "#23856D" },
-          { id: 3, color: "#8B5C41" },
-          { id: 4, color: "#252B42" }
-        ]
+        image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105",
+        colors: ["blue", "green", "orange", "purple"]
       },
       {
         id: 2,
@@ -339,12 +334,15 @@ export const shopData = {
   products: [
     {
       id: 1,
-      name: "Graphic Design",
+      name: "Floating Phone",
       category: "English Department",
       price: 16.48,
       discountedPrice: 6.48,
       image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105",
-      colors: ["blue", "green", "orange", "purple"]
+      colors: ["blue", "green", "orange", "purple"],
+      description: "Met minim Mollie non desert Alamo est sit cliquey dolor do met sent. RELIT official consequent door ENIM RELIT Mollie. Excitation venial consequent sent nostrum met.",
+      reviews: 10,
+      availability: "In Stock"
     },
     {
       id: 2,

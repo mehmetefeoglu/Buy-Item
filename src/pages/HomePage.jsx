@@ -7,9 +7,18 @@ import Carousel from '../components/Carousel';
 import NeuralSection from '../components/NeuralSection';
 import ArticleCard from '../components/ArticleCard';
 
+import Slider from '../components/Slider.jsx';
+
 const HomePage = () => {
   return (
+
+    
     <div className="w-full">
+{/* Hero Section */}
+<div className="w-full">
+        <Slider />
+      </div>
+
       {/* Editor's Pick Section */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -129,14 +138,14 @@ const HomePage = () => {
           </h3>
           {/* Web View */}
           <div className="hidden md:flex flex-wrap justify-center gap-y-16">
-            {homeData.products.items.map((product, index) => (
+            {homeData.products.items.map((product) => (
               <div key={product.id} className="w-1/4 px-4">
                 <ProductCard2 {...product} />
               </div>
             ))}
           </div>
           {/* Mobile View */}
-          <div className="md:hidden flex flex-wrap -mx-2">
+          <div className="md:hidden flex flex-col gap-4">
             {homeData.products.items.map(product => (
               <ProductCard2 key={product.id} {...product} />
             ))}

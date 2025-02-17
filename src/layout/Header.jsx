@@ -6,7 +6,7 @@ import {
   ChevronDown, Heart
 } from 'lucide-react';
 import { headerData } from '../data/index';
-import Slider from '../components/Slider.jsx';
+
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -174,7 +174,7 @@ const Header = () => {
 
               {/* Menu Links */}
               <div className="flex-1 overflow-y-auto">
-                <nav className="flex flex-col items-center p-4">
+                <nav className="flex flex-col p-4">
                   {headerData.navigation.mainLinks.map(({ id, text, path }) => (
                     <Link 
                       key={id}
@@ -197,7 +197,7 @@ const Header = () => {
 
               {/* Menu Footer */}
               <div className="border-t">
-                <div className="flex flex-col items-center p-4 gap-4">
+                <div className="flex flex-col p-4 gap-4">
                   <Link 
                     to="/auth"
                     className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
@@ -209,32 +209,30 @@ const Header = () => {
 
                   <Link
                     to="/search"
-                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    aria-label="Search"
                   >
                     <Search className="h-5 w-5" />
+                    <span>Search</span>
                   </Link>
 
                   <Link
                     to="/cart"
-                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors relative"
+                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    aria-label="Shopping Cart"
                   >
                     <ShoppingBag className="h-5 w-5" />
-                    <span className="absolute -top-1 -right-1 bg-[#23A6F0] text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                      0
-                    </span>
+                    <span>Shopping Cart</span>
+                    <span className="ml-auto bg-[#23A6F0] text-white text-xs px-2 py-1 rounded-full">0</span>
                   </Link>
 
                   <Link
                     to="/wishlist"
-                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    aria-label="Wishlist"
                   >
                     <Heart className="h-5 w-5" />
+                    <span>Wishlist</span>
                   </Link>
                 </div>
               </div>
@@ -243,10 +241,7 @@ const Header = () => {
         )}
       </div>
 
-      {/* Hero Section */}
-      <div className="w-full">
-        <Slider />
-      </div>
+      
     </header>
   );
 };
