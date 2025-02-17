@@ -1,5 +1,6 @@
 import { Route, Switch } from 'react-router-dom';
 import HomePage from '../pages/HomePage.jsx';
+import ShopPage from '../pages/ShopPage.jsx';
 
 const PageContent = () => {
   return (
@@ -14,7 +15,7 @@ const PageContent = () => {
         <Route path="/blog" render={() => <div>Blog Page</div>} />
         <Route path="/contact" render={() => <div>Contact Page</div>} />
         <Route path="/pages" render={() => <div>Pages</div>} />
-        <Route path="/shop" render={() => <div>Shop Page</div>} />
+        <Route path="/shop" component={ShopPage} />
       </Switch>
     </main>
   );

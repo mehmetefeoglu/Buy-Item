@@ -1,30 +1,50 @@
-const ProductCard2 = ({ image, category, department, price, discountedPrice, colors }) => {
+import { Heart, ShoppingCart, Eye } from 'lucide-react';
+
+const ProductCard2 = ({ id, name, category, price, discountedPrice, image, colors }) => {
   return (
-    <div className="w-full md:w-full px-2 mb-16 md:mb-0">
-      {/* Image Container */}
-      <div className="relative w-full aspect-[3/4] overflow-hidden mb-5">
-        <img
-          src={image}
-          alt={category}
-          className="w-full h-full object-cover"
+    <div className="relative group">
+      <div className="relative">
+        <img 
+          src={image} 
+          alt={name} 
+          className="w-full aspect-square object-cover"
         />
+        
+        {/* Action Buttons */}
+        <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Wishlist Button */}
+          <button className="p-2 bg-white rounded-full hover:bg-[#23A6F0] text-[#252B42] hover:text-white transition-colors">
+            <Heart className="w-5 h-5" />
+          </button>
+          
+          {/* Cart Button */}
+          <button className="p-2 bg-white rounded-full hover:bg-[#23A6F0] text-[#252B42] hover:text-white transition-colors">
+            <ShoppingCart className="w-5 h-5" />
+          </button>
+          
+          {/* Quick View Button */}
+          <button className="p-2 bg-white rounded-full hover:bg-[#23A6F0] text-[#252B42] hover:text-white transition-colors">
+            <Eye className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Product Info - Center Aligned */}
-      <div className="flex flex-col items-center text-center">
-        <h3 className="text-sm font-bold text-gray-800 mb-2">{category}</h3>
-        <p className="text-sm text-gray-800 mb-2">{department}</p>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-gray-400">${price.toFixed(2)}</span>
-          <span className="text-sm font-bold text-[#23856D]">${discountedPrice.toFixed(2)}</span>
+      {/* Product Info */}
+      <div className="p-4 text-center">
+        <h3 className="text-base font-bold text-[#252B42] mb-2">{name}</h3>
+        <p className="text-sm text-[#737373] mb-2">{category}</p>
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-[#BDBDBD]">${price}</span>
+          <span className="text-[#23856D]">${discountedPrice}</span>
         </div>
+        
         {/* Color Options */}
-        <div className="flex gap-3">
+        <div className="flex items-center justify-center gap-2 mt-4">
           {colors.map((color) => (
-            <div
-              key={color.id}
-              className="w-[16px] h-[16px] rounded-full cursor-pointer hover:scale-110 transition-transform"
-              style={{ backgroundColor: color.color }}
+            <button 
+              key={`${id}-${color}`}
+              className={`w-4 h-4 rounded-full`}
+              style={{ backgroundColor: color }}
             />
           ))}
         </div>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
@@ -11,6 +11,8 @@ import Slider from '../components/Slider.jsx';
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const location = useLocation();
+  const isShopPage = location.pathname === '/shop';
 
   // Icon mapping objesi
   const IconMap = {
@@ -69,7 +71,7 @@ const Header = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo and Nav Links */}
             <div className="flex items-center gap-8">
-              <Link to="/" className="text-2xl font-bold text-primary whitespace-nowrap">
+              <Link to="/" className="text-2xl font-bold text-primary">
                 {headerData.navigation.logo}
               </Link>
 
@@ -84,46 +86,18 @@ const Header = () => {
                     {text}
                   </Link>
                 ))}
-                
-                {/* Shop Dropdown */}
-                <div className="relative group">
-                  <button 
-                    className="flex items-center gap-1 text-gray-700 hover:text-primary transition-colors"
-                    onClick={() => setIsShopMenuOpen(!isShopMenuOpen)}
-                  >
-                    <span>Shop</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-
-                  {/* Shop Dropdown Menu */}
-                  <div className="absolute top-full left-0 mt-2 w-[500px] bg-white shadow-lg rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="p-6 grid grid-cols-2 gap-8">
-                      {Object.entries(headerData.navigation.shopCategories).map(([category, items]) => (
-                        <div key={category}>
-                          <h3 className="font-semibold text-gray-900 mb-4 capitalize">{category}</h3>
-                          <ul className="space-y-2">
-                            {items.map((item) => (
-                              <li key={item}>
-                                <Link 
-                                  to={`/shop/${category}/${item.toLowerCase()}`}
-                                  className="text-gray-600 hover:text-primary transition-colors"
-                                >
-                                  {item}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <Link 
+                  to="/shop"
+                  className="text-gray-700 hover:text-primary transition-colors"
+                >
+                  Shop
+                </Link>
               </nav>
             </div>
 
             {/* Right Side Icons */}
-            <div className="flex items-center gap-2 md:gap-4">
-              {/* Login/Register - Hidden on mobile */}
+            <div className="flex items-center gap-4">
+              {/* User Icon - Desktop Only */}
               <Link 
                 to="/auth"
                 className="hidden md:flex items-center gap-2 text-gray-700 hover:text-primary transition-colors"
@@ -132,7 +106,7 @@ const Header = () => {
                 <span className="whitespace-nowrap">Login/Register</span>
               </Link>
 
-              {/* Action Icons */}
+              {/* Search Icon */}
               <Link
                 to="/search"
                 className="p-2 text-gray-600 hover:text-primary transition-colors"
@@ -141,6 +115,7 @@ const Header = () => {
                 <Search className="h-5 w-5" />
               </Link>
 
+              {/* Cart Icon */}
               <Link
                 to="/cart"
                 className="p-2 text-gray-600 hover:text-primary transition-colors relative"
@@ -152,22 +127,19 @@ const Header = () => {
                 </span>
               </Link>
 
+              {/* Heart Icon */}
               <Link
                 to="/wishlist"
-                className="hidden md:block p-2 text-gray-600 hover:text-primary transition-colors relative"
+                className="p-2 text-gray-600 hover:text-primary transition-colors"
                 aria-label="Wishlist"
               >
                 <Heart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
               </Link>
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-                aria-label="Toggle mobile menu"
+                className="md:hidden p-2 text-gray-600"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -177,38 +149,98 @@ const Header = () => {
               </button>
             </div>
           </div>
-
-          {/* Mobile Navigation Menu */}
-          <div
-            className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-              isMobileMenuOpen ? 'max-h-96' : 'max-h-0'
-            }`}
-          >
-            <nav className="py-4 space-y-2">
-              {headerData.navigation.mainLinks.map(({ id, text, path }) => (
-                <Link
-                  key={id}
-                  to={path}
-                  className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-                >
-                  {text}
-                </Link>
-              ))}
-              <Link
-                to="/auth"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Login/Register
-              </Link>
-              <Link
-                to="/wishlist"
-                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg"
-              >
-                Wishlist
-              </Link>
-            </nav>
-          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 bg-white z-50 md:hidden">
+            <div className="flex flex-col h-full">
+              {/* Menu Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <Link 
+                  to="/" 
+                  className="text-2xl font-bold text-primary"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {headerData.navigation.logo}
+                </Link>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Menu Links */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className="flex flex-col items-center p-4">
+                  {headerData.navigation.mainLinks.map(({ id, text, path }) => (
+                    <Link 
+                      key={id}
+                      to={path} 
+                      className="py-3 text-gray-700 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {text}
+                    </Link>
+                  ))}
+                  <Link 
+                    to="/shop"
+                    className="py-3 text-gray-700 hover:text-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Shop
+                  </Link>
+                </nav>
+              </div>
+
+              {/* Menu Footer */}
+              <div className="border-t">
+                <div className="flex flex-col items-center p-4 gap-4">
+                  <Link 
+                    to="/auth"
+                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Login/Register</span>
+                  </Link>
+
+                  <Link
+                    to="/search"
+                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Search"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Link>
+
+                  <Link
+                    to="/cart"
+                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors relative"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Shopping Cart"
+                  >
+                    <ShoppingBag className="h-5 w-5" />
+                    <span className="absolute -top-1 -right-1 bg-[#23A6F0] text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                      0
+                    </span>
+                  </Link>
+
+                  <Link
+                    to="/wishlist"
+                    className="text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Wishlist"
+                  >
+                    <Heart className="h-5 w-5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Hero Section */}
