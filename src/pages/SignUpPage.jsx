@@ -30,16 +30,38 @@ const SignUpPage = () => {
       .catch(err => setError("Roller yüklenirken hata oluştu."));
   }, []);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (formData) => {
     setIsLoading(true);
     setError("");
 
     try {
+      // Form verilerini backend formatına dönüştür
+      const data = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role_id: parseInt(formData.role_id)
+      };
+
+      // Eğer mağaza rolü seçilmişse store bilgilerini ekle
+      if (formData.role_id === "3" && formData.store) {
+        data.store = {
+          name: formData.store.name,
+          phone: formData.store.phone,
+          tax_no: formData.store.tax_no,
+          bank_account: formData.store.bank_account
+        };
+      }
+
       await api.post("/signup", data);
       history.goBack();
       alert("You need to click link in email to activate your account!");
     } catch (err) {
-      setError(err.response?.data?.message || "Bir hata oluştu");
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Kayıt işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+      }
     } finally {
       setIsLoading(false);
     }

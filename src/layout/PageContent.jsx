@@ -1,4 +1,4 @@
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import ShopPage from '../pages/ShopPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
@@ -14,7 +14,9 @@ const PageContent = () => {
         <Route path="/product/:id" component={ProductDetailPage} />
         <Route path="/signup" component={SignUpPage} />
         <Route path="/login" component={LoginPage} />
-        <Route path="*" render={() => <div>404 Not Found</div>} />
+        <Route path="*">
+          <Redirect to="/" />
+        </Route>
       </Switch>
     </main>
   );
