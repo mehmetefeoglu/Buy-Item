@@ -1,5 +1,6 @@
 import * as types from './actionTypes';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Action Creators
 export const setUser = (user) => ({
@@ -35,4 +36,61 @@ export const fetchRoles = () => async (dispatch, getState) => {
       console.error('Error fetching roles:', error);
     }
   }
+};
+
+export const loginUser = (credentials, rememberMe, history) => async (dispatch) => {
+  try {
+    console.log('Login Data:', {
+      ...credentials,
+      role_id: parseInt(credentials.role_id)
+    });
+
+    const loginData = {
+      ...credentials,
+      role_id: parseInt(credentials.role_id)
+    };
+
+    const response = await axios.post('https://workintech-fe-ecommerce.onrender.com/login', loginData);
+    
+    console.log('API Response:', response.data);
+
+    const { token, name, email, role_id } = response.data;
+    
+    // Token'ı sakla
+    if (rememberMe) {
+      localStorage.setItem('token', token);
+    } else {
+      sessionStorage.setItem('token', token);
+    }
+    
+    // User bilgisini store'a kaydet
+    dispatch(setUser({ name, email, role_id }));
+    
+    // Başarılı mesajı göster
+    toast.success('Successfully logged in!');
+    
+    // Yönlendirme
+    if (history.length > 2) {
+      history.goBack();
+    } else {
+      history.push('/');
+    }
+    
+  } catch (error) {
+    console.error('Login Error:', error.response?.data || error.message);
+    toast.error(error.response?.data?.message || 'Login failed');
+    throw error;
+  }
+};
+
+export const logout = () => (dispatch) => {
+  // Token'ı localStorage ve sessionStorage'dan temizle
+  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+  
+  // User state'ini temizle
+  dispatch(setUser({}));
+  
+  // Başarılı mesajı göster
+  toast.success('Successfully logged out!');
 }; 

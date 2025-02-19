@@ -4,6 +4,8 @@ import Footer from './layout/Footer.jsx';
 import PageContent from './layout/PageContent.jsx';
 import { Provider } from 'react-redux';
 import store from './store';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
@@ -13,6 +15,7 @@ const App = () => {
           <Header />
           <PageContent />
           <Footer className="mt-auto" />
+          <ToastContainer />
         </div>
       </Router>
     </Provider>
