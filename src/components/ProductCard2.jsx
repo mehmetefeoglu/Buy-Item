@@ -47,9 +47,9 @@ const ProductCard2 = ({ id, name, category, price, discountedPrice, image, color
           
           {/* Color Options */}
           <div className="flex items-center justify-center gap-2 mt-4">
-            {colors.map((color) => (
+            {colors.map((color, index) => (
               <button 
-                key={`${id}-${color}`}
+                key={`${id}-${color}-${index}`}
                 className={`w-4 h-4 rounded-full`}
                 style={{ backgroundColor: color }}
               />
