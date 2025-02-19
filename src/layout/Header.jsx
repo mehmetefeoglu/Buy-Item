@@ -1,17 +1,28 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useHistory } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/actions/clientActions';
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
   ChevronDown
 } from 'lucide-react';
 import { headerData } from '../data/index';
+import Gravatar from 'react-gravatar';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const location = useLocation();
+  const history = useHistory();
+  const dispatch = useDispatch();
   const isShopPage = location.pathname === '/shop';
+  const user = useSelector(state => state.client.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    history.push('/');
+  };
 
   return (
     <header className="relative">
@@ -47,23 +58,51 @@ const Header = () => {
 
             {/* Right Side Icons */}
             <div className="flex items-center gap-4">
+              {/* User Info - Gravatar kısmı */}
+              {user?.email && (
+                <div className="flex items-center gap-2">
+                  <Gravatar email={user.email} size={32} className="rounded-full" />
+                  <span className="text-sm font-medium">{user.name}</span>
+                </div>
+              )}
+
               {/* User Icon - Desktop Only */}
-              <Link 
-                to="/signup"
-                className="hidden md:flex items-center gap-2 text-gray-700 hover:text-primary transition-colors"
-              >
-                <User className="h-5 w-5" />
-                <span className="whitespace-nowrap">Login/Register</span>
-              </Link>
+              {user?.email ? (
+                <button
+                  onClick={handleLogout}
+                  className="hidden md:flex items-center gap-2 text-gray-700 hover:text-primary transition-colors"
+                >
+                  <User className="h-5 w-5" />
+                  <span className="whitespace-nowrap">Logout</span>
+                </button>
+              ) : (
+                <Link 
+                  to="/login"
+                  className="hidden md:flex items-center gap-2 text-gray-700 hover:text-primary transition-colors"
+                >
+                  <User className="h-5 w-5" />
+                  <span className="whitespace-nowrap">Login/Register</span>
+                </Link>
+              )}
 
               {/* Mobile Profile Icon */}
-              <Link
-                to="/signup"
-                className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors"
-                aria-label="Profile"
-              >
-                <User className="h-5 w-5" />
-              </Link>
+              {user?.email ? (
+                <button
+                  onClick={handleLogout}
+                  className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors"
+                  aria-label="Logout"
+                >
+                  <User className="h-5 w-5" />
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors"
+                  aria-label="Profile"
+                >
+                  <User className="h-5 w-5" />
+                </Link>
+              )}
 
               {/* Search Icon */}
               <Link
@@ -142,14 +181,27 @@ const Header = () => {
                   >
                     Shop
                   </Link>
-                  <Link
-                    to="/signup"
-                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <User className="h-5 w-5" />
-                    <span>Login/Register</span>
-                  </Link>
+                  {user?.email ? (
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                    >
+                      <User className="h-5 w-5" />
+                      <span>Logout</span>
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <User className="h-5 w-5" />
+                      <span>Login/Register</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

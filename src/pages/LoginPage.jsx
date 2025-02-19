@@ -1,30 +1,27 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
+import { useDispatch } from 'react-redux';
 import { Loader2 } from "lucide-react";
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "https://workintech-fe-ecommerce.onrender.com"
-});
+import { loginUser } from '../store/actions/clientActions';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Gravatar from 'react-gravatar';
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    setError("");
-
     try {
-      const response = await api.post("/login", data);
-      localStorage.setItem("token", response.data.token);
-      history.push("/");
+      await dispatch(loginUser(data, rememberMe, history));
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      // Hata işleme toast ile clientActions'da yapılıyor
     } finally {
       setIsLoading(false);
     }
@@ -85,9 +82,20 @@ const LoginPage = () => {
               </select>
             </div>
 
-            {error && (
-              <div className="text-red-600 text-sm">{error}</div>
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  Remember me
+                </label>
+              </div>
+            </div>
 
             <div>
               <button
@@ -102,9 +110,20 @@ const LoginPage = () => {
                 )}
               </button>
             </div>
+
+            <div className="flex items-center justify-center space-x-2 mt-4">
+              <span className="text-gray-600">Create account</span>
+              <Link 
+                to="/signup" 
+                className="text-[#23A6F0] hover:text-[#1a7ab3] font-medium"
+              >
+                Register
+              </Link>
+            </div>
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
