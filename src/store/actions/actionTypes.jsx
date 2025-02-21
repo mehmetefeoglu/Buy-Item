@@ -16,4 +16,9 @@ export const SET_FILTER = 'SET_FILTER';
 // Shopping Cart Action Types
 export const SET_CART = 'SET_CART';
 export const SET_PAYMENT = 'SET_PAYMENT';
-export const SET_ADDRESS = 'SET_ADDRESS'; 
+export const SET_ADDRESS = 'SET_ADDRESS';
+
+// New action types
+export const FETCH_CATEGORIES_START = 'FETCH_CATEGORIES_START';
+export const FETCH_CATEGORIES_SUCCESS = 'FETCH_CATEGORIES_SUCCESS';
+export const FETCH_CATEGORIES_FAIL = 'FETCH_CATEGORIES_FAIL'; 

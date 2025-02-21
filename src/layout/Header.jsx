@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/actions/clientActions';
+import { fetchCategories } from '../store/actions/productActions';
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
@@ -18,6 +19,23 @@ const Header = () => {
   const dispatch = useDispatch();
   const isShopPage = location.pathname === '/shop';
   const user = useSelector(state => state.client.user);
+  const categories = useSelector(state => state.product.categories);
+  const loading = useSelector(state => state.product.loading);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Kategorileri erkek ve kadın olarak grupla
+  const groupedCategories = {
+    men: categories.filter(cat => cat.gender === 'e'),
+    women: categories.filter(cat => cat.gender === 'k')
+  };
+
+  // Top 5 kategoriyi al
+  const topCategories = categories
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -26,6 +44,41 @@ const Header = () => {
 
   return (
     <header className="relative">
+      {/* Top Bar */}
+      <div className="bg-[#252B42] text-white py-3 hidden md:block">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center">
+            {/* Left Side */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span>(225) 555-0118</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span>michelle.rivera@example.com</span>
+              </div>
+            </div>
+
+            {/* Center Text */}
+            <div>
+              <p>Follow Us and get a chance to win 80% off</p>
+            </div>
+
+            {/* Right Side - Social Links */}
+            <div className="flex items-center gap-4">
+              <span>Follow Us :</span>
+              <div className="flex items-center gap-2">
+                <Instagram className="h-4 w-4" />
+                <Youtube className="h-4 w-4" />
+                <Facebook className="h-4 w-4" />
+                <Twitter className="h-4 w-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Navigation */}
       <div className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
@@ -47,12 +100,85 @@ const Header = () => {
                     {text}
                   </Link>
                 ))}
-                <Link 
-                  to="/shop"
-                  className="text-gray-700 hover:text-primary transition-colors"
-                >
-                  Shop
-                </Link>
+                
+                {/* Shop Dropdown - Eski tasarıma göre */}
+                <div className="relative group">
+                  <button
+                    className="flex items-center gap-1 text-gray-700 group-hover:text-primary transition-colors"
+                    onClick={() => setIsShopMenuOpen(!isShopMenuOpen)}
+                  >
+                    Shop
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isShopMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Shop Dropdown Menu */}
+                  {isShopMenuOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-[800px] bg-white border border-gray-200 rounded-md shadow-lg py-4">
+                      <div className="flex">
+                        {/* Top Categories */}
+                        <div className="w-1/3 border-r border-gray-200 px-4">
+                          <h3 className="font-medium text-gray-900 mb-4">Top Categories</h3>
+                          <div className="space-y-4">
+                            {topCategories.map(category => (
+                              <Link
+                                key={category.id}
+                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                                className="flex items-center gap-3 group"
+                                onClick={() => setIsShopMenuOpen(false)}
+                              >
+                                <img 
+                                  src={category.img} 
+                                  alt={category.title}
+                                  className="w-16 h-16 object-cover rounded-lg group-hover:opacity-80 transition-opacity"
+                                />
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-primary">
+                                    {category.title}
+                                  </h4>
+                                  <p className="text-xs text-gray-500">Rating: {category.rating}</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Women Categories */}
+                        <div className="w-1/3 px-4">
+                          <h3 className="font-medium text-gray-900 mb-4">Women</h3>
+                          <div className="space-y-2">
+                            {groupedCategories.women.map(category => (
+                              <Link
+                                key={category.id}
+                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                                className="block text-sm text-gray-700 hover:text-primary transition-colors"
+                                onClick={() => setIsShopMenuOpen(false)}
+                              >
+                                {category.title}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Men Categories */}
+                        <div className="w-1/3 px-4">
+                          <h3 className="font-medium text-gray-900 mb-4">Men</h3>
+                          <div className="space-y-2">
+                            {groupedCategories.men.map(category => (
+                              <Link
+                                key={category.id}
+                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                                className="block text-sm text-gray-700 hover:text-primary transition-colors"
+                                onClick={() => setIsShopMenuOpen(false)}
+                              >
+                                {category.title}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </nav>
             </div>
 
@@ -174,13 +300,51 @@ const Header = () => {
                       {text}
                     </Link>
                   ))}
-                  <Link
-                    to="/shop"
-                    className="block text-gray-700 hover:text-primary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Shop
-                  </Link>
+                  
+                  {/* Shop Categories in Mobile */}
+                  <div className="space-y-4">
+                    <div className="font-medium text-gray-900">Shop</div>
+                    
+                    {/* Women Categories */}
+                    <div className="space-y-2">
+                      <div className="pl-4 text-sm font-medium text-gray-700">Women</div>
+                      {groupedCategories.women.map(category => (
+                        <Link
+                          key={category.id}
+                          to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                          className="block pl-8 text-sm text-gray-600 hover:text-primary transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {category.title}
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* Men Categories */}
+                    <div className="space-y-2">
+                      <div className="pl-4 text-sm font-medium text-gray-700">Men</div>
+                      {groupedCategories.men.map(category => (
+                        <Link
+                          key={category.id}
+                          to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                          className="block pl-8 text-sm text-gray-600 hover:text-primary transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {category.title}
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* View All Link */}
+                    <Link
+                      to="/shop"
+                      className="block pl-4 text-primary hover:text-primary-dark transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      View All Products
+                    </Link>
+                  </div>
+
                   {user?.email ? (
                     <button
                       onClick={() => {
