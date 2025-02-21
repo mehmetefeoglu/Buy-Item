@@ -1,5 +1,5 @@
 import * as types from './actionTypes';
-import axios from 'axios';
+import api from '../../api/axiosInstance';  // Yolu düzelttik
 import { toast } from 'react-toastify';
 
 // Action Creators
@@ -30,7 +30,7 @@ export const fetchRoles = () => async (dispatch, getState) => {
   // Sadece ihtiyaç olduğunda çağır
   if (roles.length === 0) {
     try {
-      const response = await axios.get('https://workintech-fe-ecommerce.onrender.com/roles');
+      const response = await api.get('/roles');
       dispatch(setRoles(response.data));
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -38,35 +38,64 @@ export const fetchRoles = () => async (dispatch, getState) => {
   }
 };
 
+export const verifyToken = () => async (dispatch) => {
+  // Önce localStorage'ı kontrol et
+  const persistedToken = localStorage.getItem('token');
+  // Sonra sessionStorage'ı kontrol et
+  const sessionToken = sessionStorage.getItem('token');
+  
+  // Kullanılacak token'ı belirle
+  const token = persistedToken || sessionToken;
+  
+  if (!token) return;
+
+  try {
+    // Token'ı axios header'ına ekle
+    api.defaults.headers.common['Authorization'] = token;
+    
+    const response = await api.get('/verify');
+    
+    // Token geçerliyse user bilgisini store'a kaydet
+    dispatch(setUser(response.data));
+    
+    // Token'ı yenile ve aynı storage'a kaydet
+    if (response.data.token) {
+      if (persistedToken) {
+        localStorage.setItem('token', response.data.token);
+      } else {
+        sessionStorage.setItem('token', response.data.token);
+      }
+    }
+  } catch (error) {
+    // Token geçersizse temizle
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
+    dispatch(setUser({}));
+  }
+};
+
 export const loginUser = (credentials, rememberMe, history) => async (dispatch) => {
   try {
-    console.log('Login Data:', {
-      ...credentials,
-      role_id: parseInt(credentials.role_id)
-    });
-
     const loginData = {
       ...credentials,
       role_id: parseInt(credentials.role_id)
     };
 
-    const response = await axios.post('https://workintech-fe-ecommerce.onrender.com/login', loginData);
+    const response = await api.post('/login', loginData);
+    const { token, ...user } = response.data;
     
-    console.log('API Response:', response.data);
-
-    const { token, name, email, role_id } = response.data;
-    
-    // Token'ı sakla
+    // Token'ı sadece "Remember Me" seçiliyse localStorage'a kaydet
     if (rememberMe) {
       localStorage.setItem('token', token);
     } else {
       sessionStorage.setItem('token', token);
     }
     
-    // User bilgisini store'a kaydet
-    dispatch(setUser({ name, email, role_id }));
+    // Token'ı axios header'ına ekle
+    api.defaults.headers.common['Authorization'] = token;
     
-    // Başarılı mesajı göster
+    dispatch(setUser(user));
     toast.success('Successfully logged in!');
     
     // Yönlendirme
@@ -75,9 +104,7 @@ export const loginUser = (credentials, rememberMe, history) => async (dispatch) 
     } else {
       history.push('/');
     }
-    
   } catch (error) {
-    console.error('Login Error:', error.response?.data || error.message);
     toast.error(error.response?.data?.message || 'Login failed');
     throw error;
   }
@@ -87,8 +114,7 @@ export const logout = () => (dispatch) => {
   // Token'ı localStorage ve sessionStorage'dan temizle
   localStorage.removeItem('token');
   sessionStorage.removeItem('token');
-  
-  // User state'ini temizle
+  delete api.defaults.headers.common['Authorization'];
   dispatch(setUser({}));
   
   // Başarılı mesajı göster
