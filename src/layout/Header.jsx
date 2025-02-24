@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/actions/clientActions';
-import { fetchCategories } from '../store/actions/productActions';
+import { fetchCategories, fetchProducts } from '../store/actions/productActions';
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
@@ -40,6 +40,16 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(logout());
     history.push('/');
+  };
+
+  // Kategori tıklama işleyicisi
+  const handleCategoryClick = (category) => {
+    dispatch(fetchProducts({
+      category: category.id,
+      gender: category.gender,
+      filter: category.title
+    }));
+    setIsShopMenuOpen(false);
   };
 
   return (
@@ -102,55 +112,59 @@ const Header = () => {
                 ))}
                 
                 {/* Shop Dropdown - Eski tasarıma göre */}
-                <div className="relative group">
-                  <button
-                    className="flex items-center gap-1 text-gray-700 group-hover:text-primary transition-colors"
-                    onClick={() => setIsShopMenuOpen(!isShopMenuOpen)}
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setIsShopMenuOpen(true)}
+                  onMouseLeave={() => setIsShopMenuOpen(false)}
+                >
+                  <button 
+                    className="flex items-center gap-1 text-[#737373] hover:text-[#23A6F0] transition-colors"
                   >
                     Shop
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isShopMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isShopMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Shop Dropdown Menu */}
-                  {isShopMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-[500px] bg-white border border-gray-200 rounded-md shadow-lg py-4">
-                      <div className="flex">
-                        {/* Women Categories */}
-                        <div className="w-1/2 border-r border-gray-200 px-4">
-                          <h3 className="font-medium text-gray-900 mb-4">Women</h3>
-                          <div className="space-y-2">
-                            {groupedCategories.women.map(category => (
-                              <Link
-                                key={category.id}
-                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
-                                className="block text-sm text-gray-700 hover:text-primary transition-colors"
-                                onClick={() => setIsShopMenuOpen(false)}
-                              >
-                                {category.title}
-                              </Link>
-                            ))}
-                          </div>
+                  <div 
+                    className={`absolute top-full left-0 mt-1 w-[500px] bg-white border border-gray-200 rounded-md shadow-lg py-4 transition-all duration-300 ${
+                      isShopMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                    }`}
+                  >
+                    <div className="flex">
+                      {/* Women Categories */}
+                      <div className="w-1/2 border-r border-gray-200 px-4">
+                        <h3 className="font-medium text-gray-900 mb-4">Women</h3>
+                        <div className="space-y-2">
+                          {groupedCategories.women.map(category => (
+                            <Link
+                              key={category.id}
+                              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                              className="block text-sm text-gray-700 hover:text-primary transition-colors"
+                              onClick={() => handleCategoryClick(category)}
+                            >
+                              {category.title}
+                            </Link>
+                          ))}
                         </div>
+                      </div>
 
-                        {/* Men Categories */}
-                        <div className="w-1/2 px-4">
-                          <h3 className="font-medium text-gray-900 mb-4">Men</h3>
-                          <div className="space-y-2">
-                            {groupedCategories.men.map(category => (
-                              <Link
-                                key={category.id}
-                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
-                                className="block text-sm text-gray-700 hover:text-primary transition-colors"
-                                onClick={() => setIsShopMenuOpen(false)}
-                              >
-                                {category.title}
-                              </Link>
-                            ))}
-                          </div>
+                      {/* Men Categories */}
+                      <div className="w-1/2 px-4">
+                        <h3 className="font-medium text-gray-900 mb-4">Men</h3>
+                        <div className="space-y-2">
+                          {groupedCategories.men.map(category => (
+                            <Link
+                              key={category.id}
+                              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+                              className="block text-sm text-gray-700 hover:text-primary transition-colors"
+                              onClick={() => handleCategoryClick(category)}
+                            >
+                              {category.title}
+                            </Link>
+                          ))}
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </nav>
             </div>
@@ -286,7 +300,10 @@ const Header = () => {
                           key={category.id}
                           to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
                           className="block pl-8 text-sm text-gray-600 hover:text-primary transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={() => {
+                            handleCategoryClick(category);
+                            setIsMobileMenuOpen(false);
+                          }}
                         >
                           {category.title}
                         </Link>
@@ -301,7 +318,10 @@ const Header = () => {
                           key={category.id}
                           to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
                           className="block pl-8 text-sm text-gray-600 hover:text-primary transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={() => {
+                            handleCategoryClick(category);
+                            setIsMobileMenuOpen(false);
+                          }}
                         >
                           {category.title}
                         </Link>

@@ -1,27 +1,108 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { ChevronRight, LayoutGrid, List } from 'lucide-react';
+import { Link, useParams, useLocation, useHistory } from 'react-router-dom';
+import { ChevronRight, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import ProductCard2 from '../components/ProductCard2';
 import { shopData } from '../data';
-import { fetchCategories } from '../store/actions/productActions';
+import { fetchCategories, fetchProducts } from '../store/actions/productActions';
 
 const ShopPage = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
+  const location = useLocation();
+  const { gender, categoryName, categoryId } = useParams();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  // States
+  const [sort, setSort] = useState('');
+  const [filter, setFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [selectedSort, setSelectedSort] = useState('Popularity');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterTerm, setFilterTerm] = useState('');
+  
+  const { productList, total, loading } = useSelector(state => state.product);
+  const itemsPerPage = isMobile ? 4 : 12;
+
+  // URL'den query parametrelerini al
+  const searchParams = new URLSearchParams(location.search);
+  
   const categories = useSelector(state => state.product.categories);
-  const loading = useSelector(state => state.product.loading);
+
+  // Sıralama seçenekleri
+  const sortOptions = [
+    { label: 'Popularity', value: 'popularity' },
+    { label: 'Price Ascending', value: 'price:asc' },
+    { label: 'Price Descending', value: 'price:desc' },
+    { label: 'Rating Ascending', value: 'rating:asc' },
+    { label: 'Rating Descending', value: 'rating:desc' }
+  ];
+
+  // Ekran boyutu değişikliğini dinle
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
+    const queryParams = {
+      ...(categoryId && { category: categoryId }),
+      ...(gender && { gender: gender === 'kadin' ? 'k' : 'e' }),
+      ...(filterTerm && { filter: filterTerm }),
+      ...(sort && { sort }),
+      page,
+      limit: itemsPerPage,
+      offset: (page - 1) * itemsPerPage
+    };
+    
+    dispatch(fetchProducts(queryParams));
+  }, [categoryId, gender, filterTerm, sort, page, itemsPerPage]);
 
   // Top 5 kategoriyi al
   const topCategories = categories
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 5);
 
+  // Filtreleme değiştiğinde
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+    setPage(1);
+    updateURL({ filter: e.target.value });
+  };
+
+  // URL'i güncelle
+  const updateURL = (params) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+    history.push(`${location.pathname}?${newParams}`);
+  };
+
+  // Filtreleme modal'ı
+  const handleSearch = () => {
+    setFilterTerm(filter);
+    setPage(1);
+    updateURL({ filter: filter });
+    setIsFilterOpen(false);
+  };
+
+  // Pagination butonlarını güncelle
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const showPagination = total > itemsPerPage;
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
       
       {/* Page Title */}
       <h1 className="text-2xl md:text-3xl font-bold text-center py-2 text-[#252B42]">
@@ -46,6 +127,16 @@ const ShopPage = () => {
               key={category.id}
               to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
               className="w-full sm:w-[calc(50%-8px)] md:w-[calc(33.33%-12px)] lg:w-[calc(20%-16px)] group relative overflow-hidden rounded-lg"
+              onClick={() => {
+                setPage(1);
+                setFilterTerm(category.title);
+                setFilter(category.title);
+                updateURL({ 
+                  filter: category.title,
+                  category: category.id,
+                  gender: category.gender === 'k' ? 'kadin' : 'erkek'
+                });
+              }}
             >
               <div className="relative pt-[100%]">
                 <img 
@@ -69,14 +160,11 @@ const ShopPage = () => {
         </div>
       </section>
 
-
-      
-
       {/* Filter Bar */}
-      <div className="flex flex-col md:flex-row md:justify-between items-center px-4 py-8 gap-4">
+      <div className="flex flex-col md:flex-row md:justify-between items-center py-8 gap-4">
         {/* Sol Grup - Mobilde En Üstte */}
         <div className="w-full md:w-auto order-1 md:order-1">
-          <span className="text-[#737373] block text-center md:text-left">Showing all 12 results</span>
+          <span className="text-[#737373] block text-center md:text-left">Showing all {total} results</span>
         </div>
         
         {/* Orta Grup - Mobilde Ortada */}
@@ -90,82 +178,174 @@ const ShopPage = () => {
           </button>
         </div>
         
-        {/* Sağ Grup - Mobilde En Altta */}
+        {/* Sağ Grup */}
         <div className="flex items-center gap-4 w-full md:w-auto justify-center order-3 md:order-3">
-          <button className="flex items-center gap-2 text-[#737373] border border-[#E9E9E9]/100 px-4 py-2 rounded bg-gray-100">
-            <span>Popularity</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-          <button className="px-5 py-2 bg-[#23A6F0] text-white rounded hover:bg-[#1a7ab3] transition-colors">
+          <div className="relative">
+            <button 
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center justify-between gap-2 text-[#737373] border border-[#E9E9E9] px-4 py-2 rounded bg-white min-w-[160px]"
+            >
+              <span>{selectedSort}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isSortOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            <div 
+              className={`absolute top-full left-0 mt-1 w-full bg-white border border-[#E9E9E9] rounded shadow-lg z-10 transition-all duration-300 ${
+                isSortOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+              }`}
+            >
+              {sortOptions.map((option) => (
+                <button 
+                  key={option.value}
+                  onClick={() => {
+                    setSort(option.value);
+                    setSelectedSort(option.label);
+                    setIsSortOpen(false);
+                    updateURL({ sort: option.value });
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-[#737373]"
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="px-5 py-2 bg-[#23A6F0] text-white rounded hover:bg-[#1a7ab3] transition-colors"
+          >
             Filter
           </button>
         </div>
       </div>
 
-      {/* Product Grid */}
-      <div className="px-4">
-        <div className="flex flex-col md:flex-row md:flex-wrap md:justify-between gap-4">
-          {Array.from({ length: 12 }, (_, i) => {
-            const imageIds = [
-              '1434389677669-e08b4cac3105',
-              '1485462537746-965f33f7f6a7',
-              '1467043198406-dc953a3defa0',
-              '1490481651871-ab68de25d43d',
-              '1486406146926-c627a92ad1ab',
-              '1460925895917-afdab827c52f',
-              '1441986300917-64674bd600d8',
-              '1479064555552-3ef4979f8908',
-              '1495121605193-b116b5b9c5fe',
-              '1434389677669-e08b4cac3105',
-              '1502945015378-0e284ca1a5be',
-              '1497366754035-f200968a6e72'
-            ];
-            
-            return {
-              id: i + 1,
-              name: `Floating Phone ${i + 1}`,
-              category: "English Department",
-              price: 15.35,
-              discountedPrice: 6.48,
-              image: `https://images.unsplash.com/photo-${imageIds[i]}`,
-              colors: ["blue", "green", "orange", "purple"],
-              description: "Met minim Mollie non desert Alamo est sit cliquey dolor do met sent.",
-              reviews: 10,
-              availability: "In Stock"
-            };
-          }).map((product) => (
-            <div key={product.id} className="w-full md:w-[48%] lg:w-[23%]">
-              <ProductCard2 {...product} />
+      {/* Filtreleme Modal/Popup */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h3 className="text-lg font-bold mb-4">Filter Products</h3>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={filter}
+              onChange={handleFilterChange}
+              className="w-full p-2 border rounded mb-4"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+            />
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={() => {
+                  setFilter('');
+                  setFilterTerm('');
+                  setIsFilterOpen(false);
+                  updateURL({ filter: null });
+                }}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                Clear
+              </button>
+              <button 
+                onClick={handleSearch}
+                className="px-4 py-2 bg-[#23A6F0] text-white rounded hover:bg-[#1a7ab3]"
+              >
+                Search
+              </button>
             </div>
-          ))}
+          </div>
         </div>
+      )}
+
+      {/* Ürün Listesi */}
+      <div>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-6">
+            {productList.map(product => {
+              // API'den gelen veriyi kontrol et
+              console.log('Product data:', product);
+              
+              return (
+                <div key={product.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
+                  <ProductCard2 
+                    id={product.id}
+                    name={product.name}
+                    description={product.description}
+                    price={product.price}
+                    images={product.images} // Direkt images array'ini geçelim
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center gap-2 py-8">
-        <button className="px-4 py-2 text-[#23A6F0] border border-[#E9E9E9] rounded hover:bg-[#23A6F0] hover:text-white transition-colors">
-          First
-        </button>
-        {[1, 2, 3].map((page) => (
+      {showPagination && (
+        <div className="flex justify-center gap-2 py-8">
           <button 
-            key={page}
-            className={`px-4 py-2 rounded transition-colors
-              ${page === 1 
-                ? 'bg-[#23A6F0] text-white' 
+            onClick={() => {
+              setPage(1);
+              updateURL({ page: 1 });
+            }}
+            disabled={page === 1}
+            className={`px-4 py-2 rounded transition-colors ${
+              page === 1 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
                 : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
-              }`}
+            }`}
           >
-            {page}
+            First
           </button>
-        ))}
-        <button className="px-4 py-2 text-[#23A6F0] border border-[#E9E9E9] rounded hover:bg-[#23A6F0] hover:text-white transition-colors">
-          Next
-        </button>
-      </div>
+          
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .slice(Math.max(0, page - 2), Math.min(totalPages, page + 1))
+            .map((pageNum) => (
+              <button 
+                key={pageNum}
+                onClick={() => {
+                  setPage(pageNum);
+                  updateURL({ page: pageNum });
+                }}
+                className={`px-4 py-2 rounded transition-colors ${
+                  pageNum === page 
+                    ? 'bg-[#23A6F0] text-white' 
+                    : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+          
+          <button 
+            onClick={() => {
+              const nextPage = page + 1;
+              setPage(nextPage);
+              updateURL({ page: nextPage });
+            }}
+            disabled={page >= totalPages}
+            className={`px-4 py-2 rounded transition-colors ${
+              page >= totalPages
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Brand Logos */}
-      <div className="bg-[#FAFAFA]">
-        <div className="flex flex-col md:flex-row md:justify-between items-center py-24 px-4">
+      <div className="bg-[#FAFAFA] -mx-4 md:-mx-8">
+        <div className="flex flex-col md:flex-row md:justify-between items-center py-24 px-4 md:px-8">
           {shopData.brands.map((brand) => (
             <a
               key={brand.id}

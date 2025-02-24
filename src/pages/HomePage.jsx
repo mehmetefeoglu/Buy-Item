@@ -6,16 +6,32 @@ import { homeData } from '../data/index';
 import Carousel from '../components/Carousel';
 import NeuralSection from '../components/NeuralSection';
 import ArticleCard from '../components/ArticleCard';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchProducts } from '../store/actions/productActions';
 
 import Slider from '../components/Slider.jsx';
 
 const HomePage = () => {
-  return (
+  const dispatch = useDispatch();
+  const { productList } = useSelector(state => state.product);
 
-    
+  useEffect(() => {
+    // En çok satan ürünleri getir
+    dispatch(fetchProducts({ 
+      limit: 8,
+      sortBy: 'sell_count',
+      order: 'desc'
+    }));
+  }, [dispatch]);
+
+  // Bestseller Products kısmı
+  const bestsellerProducts = productList.slice(0, 8); // İlk 8 ürünü al
+
+  return (
     <div className="w-full">
-{/* Hero Section */}
-<div className="w-full">
+      {/* Hero Section */}
+      <div className="w-full">
         <Slider />
       </div>
 
@@ -127,27 +143,26 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Products Section */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-xl font-bold text-center text-gray-800 mb-5">
-            {homeData.products.title}
-          </h2>
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            BESTSELLER PRODUCTS
-          </h3>
-          {/* Web View */}
-          <div className="hidden md:flex flex-wrap justify-center gap-y-16">
-            {homeData.products.items.map((product) => (
-              <div key={product.id} className="w-1/4 px-4">
-                <ProductCard2 {...product} />
-              </div>
-            ))}
+      {/* Bestseller Products */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h5 className="text-primary font-bold mb-2">Featured Products</h5>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#252B42] mb-2">BESTSELLER PRODUCTS</h2>
+            <p className="text-[#737373]">Problems trying to resolve the conflict between</p>
           </div>
-          {/* Mobile View */}
-          <div className="md:hidden flex flex-col gap-4">
-            {homeData.products.items.map(product => (
-              <ProductCard2 key={product.id} {...product} />
+
+          <div className="flex flex-wrap gap-6">
+            {bestsellerProducts.map(product => (
+              <div key={product.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
+                <ProductCard2 
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  images={product.images}
+                />
+              </div>
             ))}
           </div>
         </div>

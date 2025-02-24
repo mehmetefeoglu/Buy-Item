@@ -67,6 +67,25 @@ const productReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload
       };
+    case types.FETCH_PRODUCTS_START:
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
+    case types.FETCH_PRODUCTS_SUCCESS:
+      return {
+        ...state,
+        productList: action.payload.products,
+        total: action.payload.total,
+        loading: false
+      };
+    case types.FETCH_PRODUCTS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload
+      };
     default:
       return state;
   }
