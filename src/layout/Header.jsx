@@ -113,37 +113,10 @@ const Header = () => {
 
                   {/* Shop Dropdown Menu */}
                   {isShopMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-[800px] bg-white border border-gray-200 rounded-md shadow-lg py-4">
+                    <div className="absolute top-full left-0 mt-1 w-[500px] bg-white border border-gray-200 rounded-md shadow-lg py-4">
                       <div className="flex">
-                        {/* Top Categories */}
-                        <div className="w-1/3 border-r border-gray-200 px-4">
-                          <h3 className="font-medium text-gray-900 mb-4">Top Categories</h3>
-                          <div className="space-y-4">
-                            {topCategories.map(category => (
-                              <Link
-                                key={category.id}
-                                to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
-                                className="flex items-center gap-3 group"
-                                onClick={() => setIsShopMenuOpen(false)}
-                              >
-                                <img 
-                                  src={category.img} 
-                                  alt={category.title}
-                                  className="w-16 h-16 object-cover rounded-lg group-hover:opacity-80 transition-opacity"
-                                />
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-primary">
-                                    {category.title}
-                                  </h4>
-                                  <p className="text-xs text-gray-500">Rating: {category.rating}</p>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-
                         {/* Women Categories */}
-                        <div className="w-1/3 px-4">
+                        <div className="w-1/2 border-r border-gray-200 px-4">
                           <h3 className="font-medium text-gray-900 mb-4">Women</h3>
                           <div className="space-y-2">
                             {groupedCategories.women.map(category => (
@@ -160,7 +133,7 @@ const Header = () => {
                         </div>
 
                         {/* Men Categories */}
-                        <div className="w-1/3 px-4">
+                        <div className="w-1/2 px-4">
                           <h3 className="font-medium text-gray-900 mb-4">Men</h3>
                           <div className="space-y-2">
                             {groupedCategories.men.map(category => (

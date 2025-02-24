@@ -1,13 +1,30 @@
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { ChevronRight, LayoutGrid, List } from 'lucide-react';
 import ProductCard2 from '../components/ProductCard2';
 import { shopData } from '../data';
+import { fetchCategories } from '../store/actions/productActions';
 
 const ShopPage = () => {
+  const dispatch = useDispatch();
+  const categories = useSelector(state => state.product.categories);
+  const loading = useSelector(state => state.product.loading);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Top 5 kategoriyi al
+  const topCategories = categories
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+
   return (
-    <div className="w-full">
+    <div className="container mx-auto px-4 py-8">
+      
       {/* Page Title */}
-      <h1 className="text-2xl md:text-3xl font-bold text-center py-8 text-[#252B42]">
+      <h1 className="text-2xl md:text-3xl font-bold text-center py-2 text-[#252B42]">
         Shop
       </h1>
 
@@ -19,25 +36,41 @@ const ShopPage = () => {
         <ChevronRight className="w-4 h-4 text-[#BDBDBD]" />
         <span className="text-[#BDBDBD]">Shop</span>
       </div>
-
-      {/* Category Cards */}
-      <div className="px-4">
-        <div className="flex flex-col md:flex-row md:flex-wrap md:gap-4 lg:flex-nowrap lg:justify-between">
-          {shopData.categories.map((category) => (
-            <div key={category.id} className="relative h-48 w-full md:w-[48%] lg:w-[19%] mb-4 md:mb-0">
-              <img 
-                src={category.image} 
-                alt={category.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white">
-                <h3 className="text-xl font-bold mb-1">{category.name}</h3>
-                <p className="text-sm">{category.itemCount} Items</p>
+      
+      {/* Top Categories Section */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Top Categories</h2>
+        <div className="flex flex-wrap gap-4">
+          {topCategories.map(category => (
+            <Link
+              key={category.id}
+              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.title}/${category.id}`}
+              className="w-full sm:w-[calc(50%-8px)] md:w-[calc(33.33%-12px)] lg:w-[calc(20%-16px)] group relative overflow-hidden rounded-lg"
+            >
+              <div className="relative pt-[100%]">
+                <img 
+                  src={category.img} 
+                  alt={category.title}
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                <div>
+                  <h3 className="text-white font-medium text-lg">
+                    {category.title}
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Rating: {category.rating}
+                  </p>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
-      </div>
+      </section>
+
+
+      
 
       {/* Filter Bar */}
       <div className="flex flex-col md:flex-row md:justify-between items-center px-4 py-8 gap-4">
