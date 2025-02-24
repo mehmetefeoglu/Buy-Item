@@ -7,7 +7,9 @@ const initialState = {
   limit: 25,
   offset: 0,
   filter: '',
-  fetchState: 'NOT_FETCHED'
+  fetchState: 'NOT_FETCHED',
+  loading: false,
+  error: null
 };
 
 const productReducer = (state = initialState, action) => {
@@ -46,6 +48,24 @@ const productReducer = (state = initialState, action) => {
       return {
         ...state,
         filter: action.payload
+      };
+    case types.FETCH_CATEGORIES_START:
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
+    case types.FETCH_CATEGORIES_SUCCESS:
+      return {
+        ...state,
+        categories: action.payload,
+        loading: false
+      };
+    case types.FETCH_CATEGORIES_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload
       };
     default:
       return state;

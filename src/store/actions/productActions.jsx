@@ -1,4 +1,5 @@
 import * as types from './actionTypes';
+import api from '../../api/axiosInstance';
 
 export const setCategories = (categories) => ({
   type: types.SET_CATEGORIES,
@@ -33,4 +34,25 @@ export const setOffset = (offset) => ({
 export const setFilter = (filter) => ({
   type: types.SET_FILTER,
   payload: filter
-}); 
+});
+
+export const fetchCategories = () => async (dispatch) => {
+  dispatch({ type: types.FETCH_CATEGORIES_START });
+  
+  try {
+    const response = await api.get('/categories');
+    
+    // Kategorileri rating'e göre sırala
+    const sortedCategories = response.data.sort((a, b) => b.rating - a.rating);
+    
+    dispatch({
+      type: types.FETCH_CATEGORIES_SUCCESS,
+      payload: sortedCategories
+    });
+  } catch (error) {
+    dispatch({
+      type: types.FETCH_CATEGORIES_FAIL,
+      payload: error.message
+    });
+  }
+}; 
