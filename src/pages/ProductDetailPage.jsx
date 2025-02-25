@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Heart, ShoppingCart, Eye, Star, ChevronLeft } from 'lucide-react';
-import { shopData } from '../data';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts } from '../store/actions/productActions';
 import ProductCard2 from '../components/ProductCard2';
+import { motion } from 'framer-motion';
+import { shopData } from '../data';
 
 const ProductDetailPage = () => {
+  const dispatch = useDispatch();
+  const { productList, loading } = useSelector(state => state.product);
   const { id } = useParams();
   const productId = parseInt(id);
   
@@ -48,6 +53,15 @@ const ProductDetailPage = () => {
     `https://images.unsplash.com/photo-${getImageId((productId % 12) + 1)}`,
     `https://images.unsplash.com/photo-${getImageId(((productId + 1) % 12) + 1)}`
   ];
+
+  useEffect(() => {
+    // Bestseller ürünleri için özel parametreler
+    dispatch(fetchProducts({ 
+      sortBy: 'sell_count',
+      order: 'desc',
+      limit: 8 
+    }));
+  }, [dispatch]);
 
   if (!product) {
     return <div>Product not found</div>;
@@ -215,28 +229,47 @@ const ProductDetailPage = () => {
           <h2 className="text-3xl font-bold text-center text-[#252B42] mb-12">
             BESTSELLER PRODUCTS
           </h2>
-          {/* Web View - 8 ürün */}
-          <div className="hidden md:flex flex-wrap justify-between gap-y-12">
-            {Array.from({ length: 8 }, (_, i) => {
-              const baseProduct = shopData.products[i % 4]; // 4 ürünü tekrar kullan
-              return {
-                ...baseProduct,
-                id: i + 1,
-                name: `Floating Phone ${i + 1}`,
-                image: `https://images.unsplash.com/photo-${getImageId(i + 1)}`
-              };
-            }).map((product) => (
-              <div key={product.id} className="w-[23%]">
-                <ProductCard2 {...product} />
+          
+          {loading ? (
+            <div className="flex justify-center">
+              <motion.div
+                className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Web View */}
+              <div className="hidden md:flex flex-wrap justify-between gap-y-12">
+                {productList.map(product => (
+                  <div key={product.id} className="w-[23%]">
+                    <ProductCard2 
+                      id={product.id}
+                      name={product.name}
+                      description={product.description}
+                      price={product.price}
+                      images={product.images}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {/* Mobile View - 4 ürün */}
-          <div className="md:hidden flex flex-col gap-4">
-            {shopData.products.slice(0, 4).map(product => (
-              <ProductCard2 key={product.id} {...product} />
-            ))}
-          </div>
+              
+              {/* Mobile View */}
+              <div className="md:hidden flex flex-col gap-4">
+                {productList.slice(0, 4).map(product => (
+                  <ProductCard2 
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    description={product.description}
+                    price={product.price}
+                    images={product.images}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
 

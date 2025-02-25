@@ -76,16 +76,17 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
       queryParams.append('gender', params.gender === 'kadin' ? 'k' : 'e');
     }
 
-    // Sıralama
+    // Sıralama için gelen parametreyi görelim
+    console.log('Sort parameter:', params.sort);
+
+    // Sıralama mantığını düzelt
     if (params.sort) {
       const [field, order] = params.sort.split(':');
-      if (field === 'popularity') {
-        queryParams.append('sortBy', 'sell_count');
-        queryParams.append('order', 'desc');
-      } else {
-        queryParams.append('sortBy', field);
-        queryParams.append('order', order);
-      }
+      console.log('Sort Field:', field);
+      console.log('Sort Order:', order);
+      
+      // API'nin beklediği formatta gönderelim
+      queryParams.append('sort', `${field}:${order}`);  // sortBy ve order yerine tek bir sort parametresi
     }
 
     // Sayfalama
@@ -99,25 +100,17 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     const queryString = queryParams.toString();
     const url = `/products${queryString ? `?${queryString}` : ''}`;
     
+    // API'ye giden URL'i görelim
     console.log('API Request URL:', url);
-    const response = await api.get(url);
 
-    // Hem kategori hem de filtre eşleşmelerini kontrol et
-    let filteredProducts = response.data.products;
-    if (params.filter) {
-      const searchTerm = params.filter.toLowerCase();
-      filteredProducts = filteredProducts.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm) ||
-        product.category?.title.toLowerCase().includes(searchTerm)
-      );
-    }
+    const response = await api.get(url);
+    console.log('API Response:', response.data);
 
     dispatch({
       type: types.FETCH_PRODUCTS_SUCCESS,
       payload: {
-        products: filteredProducts,
-        total: filteredProducts.length
+        products: response.data.products,
+        total: response.data.total
       }
     });
   } catch (error) {
