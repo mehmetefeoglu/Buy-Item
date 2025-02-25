@@ -5,6 +5,7 @@ import { ChevronRight, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import ProductCard2 from '../components/ProductCard2';
 import { shopData } from '../data';
 import { fetchCategories, fetchProducts } from '../store/actions/productActions';
+import { motion } from 'framer-motion';
 
 const ShopPage = () => {
   const dispatch = useDispatch();
@@ -264,27 +265,38 @@ const ShopPage = () => {
       <div>
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <motion.div
+              className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <div className="ml-4 text-gray-600">Loading products...</div>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-6">
-            {productList.map(product => {
-              // API'den gelen veriyi kontrol et
-              console.log('Product data:', product);
-              
-              return (
-                <div key={product.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
-                  <ProductCard2 
-                    id={product.id}
-                    name={product.name}
-                    description={product.description}
-                    price={product.price}
-                    images={product.images} // Direkt images array'ini geçelim
-                  />
-                </div>
-              );
-            })}
-          </div>
+          <motion.div 
+            className="flex flex-wrap gap-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {productList.map(product => (
+              <motion.div
+                key={product.id}
+                className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ProductCard2 
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  images={product.images}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
 
