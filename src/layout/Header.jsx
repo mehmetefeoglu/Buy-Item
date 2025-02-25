@@ -42,14 +42,14 @@ const Header = () => {
     history.push('/');
   };
 
-  // Kategori tıklama işleyicisi
-  const handleCategoryClick = (category) => {
+  // Kategori tıklama işleyicisi  
+  const handleCategoryClick = (category) => { 
     dispatch(fetchProducts({
       category: category.id,
       gender: category.gender,
       filter: category.title
     }));
-    setIsShopMenuOpen(false);
+    setIsShopMenuOpen(false); //TODO header da categoryler tıklandığında sıaralama yaparken tüm kategoryleri sıralıyor.  
   };
 
   return (

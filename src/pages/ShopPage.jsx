@@ -6,6 +6,7 @@ import ProductCard2 from '../components/ProductCard2';
 import { shopData } from '../data';
 import { fetchCategories, fetchProducts } from '../store/actions/productActions';
 import { motion } from 'framer-motion';
+import ReactPaginate from 'react-paginate';
 
 const ShopPage = () => {
   const dispatch = useDispatch();
@@ -25,7 +26,7 @@ const ShopPage = () => {
   const [filterTerm, setFilterTerm] = useState('');
   
   const { productList, total, loading } = useSelector(state => state.product);
-  const itemsPerPage = isMobile ? 4 : 12;
+  const itemsPerPage = isMobile ? 4 : 25;
 
   // URL'den query parametrelerini al
   const searchParams = new URLSearchParams(location.search);
@@ -115,6 +116,14 @@ const ShopPage = () => {
     setSelectedSort(option.label);
     setIsSortOpen(false);
     updateURL({ sort: option.value });
+  };
+
+  // Sayfa değişimini handle eden fonksiyon
+  const handlePageChange = ({ selected }) => {
+    setPage(selected + 1);
+    updateURL({ page: selected + 1 });
+    // Sayfa değiştiğinde sayfanın en üstüne scroll
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -310,58 +319,30 @@ const ShopPage = () => {
         )}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Eski pagination'ı bu yeni yapıyla değiştir */}
       {showPagination && (
-        <div className="flex justify-center gap-2 py-8">
-          <button 
-            onClick={() => {
-              setPage(1);
-              updateURL({ page: 1 });
-            }}
-            disabled={page === 1}
-            className={`px-4 py-2 rounded transition-colors ${
-              page === 1 
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
-            }`}
-          >
-            First
-          </button>
-          
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .slice(Math.max(0, page - 2), Math.min(totalPages, page + 1))
-            .map((pageNum) => (
-              <button 
-                key={pageNum}
-                onClick={() => {
-                  setPage(pageNum);
-                  updateURL({ page: pageNum });
-                }}
-                className={`px-4 py-2 rounded transition-colors ${
-                  pageNum === page 
-                    ? 'bg-[#23A6F0] text-white' 
-                    : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
-          
-          <button 
-            onClick={() => {
-              const nextPage = page + 1;
-              setPage(nextPage);
-              updateURL({ page: nextPage });
-            }}
-            disabled={page >= totalPages}
-            className={`px-4 py-2 rounded transition-colors ${
-              page >= totalPages
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'text-[#23A6F0] border border-[#E9E9E9] hover:bg-[#23A6F0] hover:text-white'
-            }`}
-          >
-            Next
-          </button>
+        <div className="py-8">
+          <ReactPaginate
+            previousLabel="Previous"
+            nextLabel="Next"
+            pageCount={totalPages}
+            onPageChange={handlePageChange}
+            forcePage={page - 1}
+            containerClassName="flex justify-center items-center gap-2 py-8"
+            pageClassName="text-[#23A6F0] border border-[#E9E9E9] rounded"
+            pageLinkClassName="px-4 py-2 block hover:bg-[#23A6F0] hover:text-white transition-colors"
+            previousClassName="text-[#23A6F0] border border-[#E9E9E9] rounded"
+            previousLinkClassName="px-4 py-2 block hover:bg-[#23A6F0] hover:text-white transition-colors"
+            nextClassName="text-[#23A6F0] border border-[#E9E9E9] rounded"
+            nextLinkClassName="px-4 py-2 block hover:bg-[#23A6F0] hover:text-white transition-colors"
+            breakClassName="text-[#23A6F0]"
+            breakLinkClassName="px-4 py-2"
+            activeClassName="!bg-[#23A6F0]"
+            activeLinkClassName="!text-white"
+            disabledClassName="opacity-50 cursor-not-allowed bg-gray-100"
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={5}
+          />
         </div>
       )}
 
@@ -389,4 +370,4 @@ const ShopPage = () => {
   );
 };
 
-export default ShopPage; 
+export default ShopPage;
