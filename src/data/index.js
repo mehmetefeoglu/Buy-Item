@@ -47,28 +47,31 @@ export const footerData = {
 };
 
 // Home Page Data (includes slider data)
+import slide1 from '../assets/images/Home/hero/shop-hero-1-product-slide-1.png';
+import slide2 from '../assets/images/Home/hero/shop-hero-1-product-slide-2.jpeg';
+
 export const homeData = {
   slider: {
     slides: [
       {
         id: 1,
-        title: "Special Offer",
-        subtitle: "Save 20% on your first order",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        buttonText: "Shop Now",
+        title: "SUMMER 2020",
+        subtitle: "NEW COLLECTION",
+        description: "We know how large objects will act, but things on a small scale.",
+        buttonText: "SHOP NOW",
         buttonLink: "/shop",
-        imageLarge: "https://picsum.photos/1920/1080",
-        imageSmall: "https://picsum.photos/640/360"
+        imageLarge: slide1,
+        imageSmall: slide1
       },
       {
         id: 2,
-        title: "New Collection",
-        subtitle: "Spring/Summer 2024",
-        description: "Discover our latest arrivals and trending styles.",
-        buttonText: "Explore Now",
-        buttonLink: "/new-collection",
-        imageLarge: "https://picsum.photos/1920/1080?random=2",
-        imageSmall: "https://picsum.photos/640/360?random=2"
+        title: "SUMMER 2020",
+        subtitle: "NEW COLLECTION",
+        description: "We know how large objects will act, but things on a small scale.",
+        buttonText: "SHOP NOW",
+        buttonLink: "/shop",
+        imageLarge: slide2,
+        imageSmall: slide2
       }
     ]
   },
