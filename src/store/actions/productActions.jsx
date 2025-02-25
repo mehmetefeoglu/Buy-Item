@@ -89,12 +89,12 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
       queryParams.append('sort', `${field}:${order}`);  // sortBy ve order yerine tek bir sort parametresi
     }
 
-    // Sayfalama
-    if (params.offset !== undefined) {
-      queryParams.append('offset', params.offset);
-    }
+    // Sayfalama parametreleri
     if (params.limit) {
       queryParams.append('limit', params.limit);
+    }
+    if (params.offset !== undefined) {
+      queryParams.append('offset', params.offset);
     }
 
     const queryString = queryParams.toString();
