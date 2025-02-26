@@ -33,4 +33,9 @@ export const FETCH_PRODUCT_FAIL = 'FETCH_PRODUCT_FAIL';
 // Fetch actions
 export const FETCH_PRODUCTS_START = 'FETCH_PRODUCTS_START';
 export const FETCH_PRODUCTS_SUCCESS = 'FETCH_PRODUCTS_SUCCESS';
-export const FETCH_PRODUCTS_FAIL = 'FETCH_PRODUCTS_FAIL'; 
+export const FETCH_PRODUCTS_FAIL = 'FETCH_PRODUCTS_FAIL';
+
+// Shopping Cart action type'larını ekleyelim
+export const ADD_TO_CART = 'ADD_TO_CART';
+export const UPDATE_CART_ITEM = 'UPDATE_CART_ITEM';
+export const REMOVE_FROM_CART = 'REMOVE_FROM_CART'; 

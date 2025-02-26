@@ -39,8 +39,8 @@ const PageContent = () => {
         <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetailPage} />
         <Route path="/signup" component={SignUpPage} />
         <Route path="/login" component={LoginPage} />
-        <ProtectedRoute path="/cart" component={CartPage} />
-        <ProtectedRoute path="/checkout" component={CheckoutPage} />
+        <Route path="/cart" component={CartPage} />
+        <Route path="/checkout" component={CheckoutPage} />
         <ProtectedRoute path="/profile" component={ProfilePage} />
         <Route path="*">
           <Redirect to="/" />

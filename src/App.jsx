@@ -8,6 +8,7 @@ import PageContent from './layout/PageContent.jsx';
 import store from './store';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 
 const AppContent = () => {
   const dispatch = useDispatch();
@@ -30,7 +31,18 @@ const AppContent = () => {
         <Header />
         <PageContent />
         <Footer className="mt-auto" />
-        <ToastContainer />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     </Router>
   );
@@ -40,6 +52,23 @@ const App = () => {
   return (
     <Provider store={store}>
       <AppContent />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 2000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#23A6F0',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </Provider>
   );
 };
