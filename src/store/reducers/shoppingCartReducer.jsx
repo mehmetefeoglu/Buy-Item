@@ -23,6 +23,46 @@ const shoppingCartReducer = (state = initialState, action) => {
         ...state,
         address: action.payload
       };
+    case types.ADD_TO_CART:
+      const existingItem = state.cart.find(
+        item => item.product.id === action.payload.product.id
+      );
+
+      if (existingItem) {
+        // Ürün zaten varsa count'u artır
+        return {
+          ...state,
+          cart: state.cart.map(item =>
+            item.product.id === action.payload.product.id
+              ? { ...item, count: item.count + action.payload.count }
+              : item
+          )
+        };
+      }
+
+      // Yeni ürün ekle
+      return {
+        ...state,
+        cart: [...state.cart, { 
+          count: action.payload.count, 
+          checked: true, 
+          product: action.payload.product 
+        }]
+      };
+    case types.UPDATE_CART_ITEM:
+      return {
+        ...state,
+        cart: state.cart.map(item =>
+          item.product.id === action.payload.productId
+            ? { ...item, count: action.payload.count }
+            : item
+        )
+      };
+    case types.REMOVE_FROM_CART:
+      return {
+        ...state,
+        cart: state.cart.filter(item => item.product.id !== action.payload)
+      };
     default:
       return state;
   }
