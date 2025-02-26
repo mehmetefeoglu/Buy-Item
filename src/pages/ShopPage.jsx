@@ -311,7 +311,7 @@ const ShopPage = () => {
                   name={product.name}
                   description={product.description}
                   price={product.price}
-                  images={product.images}
+                  images={product.images || []}
                 />
               </motion.div>
             ))}
@@ -370,4 +370,4 @@ const ShopPage = () => {
   );
 };
 
-export default ShopPage;
+export default ShopPage; 

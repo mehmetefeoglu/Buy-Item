@@ -2,68 +2,61 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Heart, ShoppingCart, Eye, Star, ChevronLeft } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts } from '../store/actions/productActions';
+import { fetchProductById, fetchProducts } from '../store/actions/productActions';
 import ProductCard2 from '../components/ProductCard2';
 import { motion } from 'framer-motion';
 import { shopData } from '../data';
 
+// Sabit renkler tanımlayalım
+const defaultColors = ["#23A6F0", "#23856D", "#E77C40", "#252B42"];
+
 const ProductDetailPage = () => {
   const dispatch = useDispatch();
-  const { productList, loading } = useSelector(state => state.product);
-  const { id } = useParams();
-  const productId = parseInt(id);
+  const { productId, id } = useParams();
+  console.log('URL Params:', useParams()); // Tüm parametreleri görelim
   
-  // Tüm ürünler için veri
-  const product = {
-    id: productId,
-    name: "Floating Phone",
-    category: "English Department",
-    price: 15.35,
-    discountedPrice: 6.48,
-    image: `https://images.unsplash.com/photo-${getImageId(productId)}`,
-    colors: ["blue", "green", "orange", "purple"],
-    description: "Met minim Mollie non desert Alamo est sit cliquey dolor do met sent.",
-    reviews: 10,
-    availability: "In Stock"
-  };
-
-  // Ürüne göre resim ID'si getir
-  function getImageId(id) {
-    const imageIds = {
-      1: '1434389677669-e08b4cac3105',
-      2: '1485462537746-965f33f7f6a7',
-      3: '1467043198406-dc953a3defa0',
-      4: '1490481651871-ab68de25d43d',
-      5: '1486406146926-c627a92ad1ab',
-      6: '1460925895917-afdab827c52f',
-      7: '1441986300917-64674bd600d8',
-      8: '1479064555552-3ef4979f8908',
-      9: '1495121605193-b116b5b9c5fe',
-      10: '1502945015378-0e284ca1a5be',
-      11: '1497366754035-f200968a6e72',
-      12: '1434389677669-e08b4cac3105'
-    };
-    return imageIds[id] || imageIds[1];
-  }
-
+  // Son parametreyi ID olarak kullanalım
+  const actualProductId = productId || id;
+  console.log('Actual Product ID:', actualProductId);
+  
+  const { currentProduct, productList, loading } = useSelector(state => state.product);
+  
   // Slider için state
-  const [mainImage, setMainImage] = useState(product.image);
-  const relatedImages = [
-    product.image,
-    `https://images.unsplash.com/photo-${getImageId((productId % 12) + 1)}`,
-    `https://images.unsplash.com/photo-${getImageId(((productId + 1) % 12) + 1)}`
-  ];
-
+  const [mainImage, setMainImage] = useState('');
+  
   useEffect(() => {
+    if (actualProductId) {
+      dispatch(fetchProductById(actualProductId));
+    }
+    
     // Bestseller ürünleri için özel parametreler
     dispatch(fetchProducts({ 
       sortBy: 'sell_count',
       order: 'desc',
       limit: 8 
     }));
-  }, [dispatch]);
+  }, [dispatch, actualProductId]);
 
-  if (!product) {
+  useEffect(() => {
+    // currentProduct değiştiğinde mainImage'i güncelle
+    if (currentProduct?.images?.[0]?.url) {
+      setMainImage(currentProduct.images[0].url);
+    }
+  }, [currentProduct]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <motion.div
+          className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+    );
+  }
+
+  if (!currentProduct) {
     return <div>Product not found</div>;
   }
 
@@ -75,7 +68,7 @@ const ProductDetailPage = () => {
         <ChevronRight className="w-4 h-4 text-[#BDBDBD]" />
         <Link to="/shop" className="text-[#252B42] hover:text-[#23A6F0] transition-colors">Shop</Link>
         <ChevronRight className="w-4 h-4 text-[#BDBDBD]" />
-        <span className="text-[#BDBDBD]">{product.name}</span>
+        <span className="text-[#BDBDBD]">{currentProduct.name}</span>
       </div>
 
       {/* Section 1: Product Images & Info */}
@@ -86,43 +79,26 @@ const ProductDetailPage = () => {
             {/* Ana Resim */}
             <div className="relative mb-4">
               <img 
-                src={mainImage} 
-                alt={product.name} 
+                src={currentProduct?.images?.[0]?.url || "https://via.placeholder.com/500x500?text=Main+Product+Image"}
+                alt={currentProduct?.name || "Product Main Image"} 
                 className="w-full aspect-square object-cover"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/500x500?text=Main+Product+Image";
+                }}
               />
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2">
-                <button 
-                  onClick={() => {
-                    const currentIndex = relatedImages.indexOf(mainImage);
-                    const prevIndex = currentIndex === 0 ? relatedImages.length - 1 : currentIndex - 1;
-                    setMainImage(relatedImages[prevIndex]);
-                  }}
-                  className="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-700" />
-                </button>
-                <button 
-                  onClick={() => {
-                    const currentIndex = relatedImages.indexOf(mainImage);
-                    const nextIndex = currentIndex === relatedImages.length - 1 ? 0 : currentIndex + 1;
-                    setMainImage(relatedImages[nextIndex]);
-                  }}
-                  className="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
-              </div>
             </div>
 
             {/* Küçük Resimler */}
             <div className="flex gap-2">
-              {relatedImages.map((img, idx) => (
+              {(currentProduct?.images || [1, 2, 3]).map((img, idx) => (
                 <img 
                   key={idx}
-                  src={img} 
-                  alt={`${product.name} view ${idx + 1}`}
+                  src={img.url || `https://via.placeholder.com/150x150?text=Thumbnail+${idx + 1}`}
+                  alt={`${currentProduct?.name || 'Product'} view ${idx + 1}`}
                   className="w-[30%] aspect-square object-cover cursor-pointer"
-                  onClick={() => setMainImage(img)}
+                  onError={(e) => {
+                    e.target.src = `https://via.placeholder.com/150x150?text=Thumbnail+${idx + 1}`;
+                  }}
                 />
               ))}
             </div>
@@ -131,35 +107,49 @@ const ProductDetailPage = () => {
           {/* Sağ Taraf - Ürün Bilgileri */}
           <div className="w-full md:w-1/2 mt-8 md:mt-0">
             <div className="space-y-6">
-              <h2 className="text-[#252B42] text-2xl font-bold">{product.name}</h2>
+              <h2 className="text-[#252B42] text-2xl font-bold">
+                {currentProduct?.name}
+              </h2>
               
               {/* Rating */}
               <div className="flex items-center gap-2">
                 <div className="flex">
-                  {[1,2,3,4,5].map(star => (
-                    <Star key={star} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className={`w-5 h-5 ${
+                        i < Math.floor(currentProduct?.rating || 0) 
+                          ? 'text-yellow-400 fill-yellow-400' 
+                          : 'text-gray-300'
+                      }`} 
+                    />
                   ))}
                 </div>
-                <span className="text-[#737373]">10 Reviews</span>
+                <span className="text-[#737373]">Rating: {currentProduct?.rating || 0}</span>
               </div>
 
               {/* Price & Availability */}
               <div className="space-y-2">
-                <p className="text-3xl font-bold text-[#252B42]">$15.35</p>
+                <p className="text-3xl font-bold text-[#252B42]">
+                  ${currentProduct?.price?.toFixed(2) || '0.00'}
+                </p>
                 <p className="text-base">
                   Availability : 
-                  <span className="text-[#23A6F0] ml-2">In Stock</span>
+                  <span className="text-[#23A6F0] ml-2">
+                    {currentProduct?.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                  </span>
                 </p>
               </div>
 
               {/* Description */}
               <p className="text-[#737373] text-base leading-relaxed">
-                {product.description}
+                {currentProduct.description}
               </p>
 
               {/* Color Options */}
               <div className="flex gap-3">
-                {product.colors.map((color, idx) => (
+                {/* API'den colors gelirse onu, gelmezse default renkleri kullan */}
+                {(currentProduct?.colors || defaultColors).map((color, idx) => (
                   <button 
                     key={idx}
                     className={`w-8 h-8 rounded-full`}
@@ -196,9 +186,12 @@ const ProductDetailPage = () => {
           {/* Sol Taraf - Resim */}
           <div className="w-full md:w-1/2">
             <img 
-              src={product.image} 
-              alt={product.name} 
+              src={currentProduct?.images?.[0]?.url || "https://via.placeholder.com/600x400?text=Technical+Details+Image"}
+              alt={currentProduct?.name || "Technical Details"} 
               className="w-full aspect-video object-cover"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/600x400?text=Technical+Details+Image";
+              }}
             />
           </div>
           

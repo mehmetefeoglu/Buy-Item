@@ -58,6 +58,9 @@ export const fetchCategories = () => async (dispatch) => {
 };
 
 export const fetchProducts = (params = {}) => async (dispatch) => {
+  // İstek başlamadan önce loading state'ini true yap
+  dispatch({ type: types.FETCH_PRODUCTS_START });
+  
   try {
     const queryParams = new URLSearchParams();
     
@@ -104,7 +107,7 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     console.log('API Request URL:', url);
 
     const response = await api.get(url);
-    console.log('API Response:', response.data);
+    console.log('API Response Products:', response.data.products);  // Ürünlerin yapısını kontrol et
 
     dispatch({
       type: types.FETCH_PRODUCTS_SUCCESS,
@@ -117,6 +120,24 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     console.error('API Error:', error);
     dispatch({
       type: types.FETCH_PRODUCTS_FAIL,
+      payload: error.message
+    });
+  }
+};
+
+export const fetchProductById = (productId) => async (dispatch) => {
+  dispatch({ type: types.FETCH_PRODUCT_START });
+  
+  try {
+    const response = await api.get(`/products/${productId}`);
+    dispatch({
+      type: types.FETCH_PRODUCT_SUCCESS,
+      payload: response.data
+    });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    dispatch({
+      type: types.FETCH_PRODUCT_FAIL,
       payload: error.message
     });
   }
