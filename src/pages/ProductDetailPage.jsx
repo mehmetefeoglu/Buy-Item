@@ -6,6 +6,8 @@ import { fetchProductById, fetchProducts } from '../store/actions/productActions
 import ProductCard2 from '../components/ProductCard2';
 import { motion } from 'framer-motion';
 import { shopData } from '../data';
+import { addToCart } from '../store/actions/shoppingCartActions';
+import { toast } from 'react-hot-toast';
 
 // Sabit renkler tanımlayalım
 const defaultColors = ["#23A6F0", "#23856D", "#E77C40", "#252B42"];
@@ -44,6 +46,15 @@ const ProductDetailPage = () => {
       setMainImage(currentProduct.images[0].url);
     }
   }, [currentProduct]);
+
+  // Sepete ekle fonksiyonu
+  const handleAddToCart = () => {
+    if (currentProduct) {
+      console.log('Adding to cart:', currentProduct); // Debug için
+      dispatch(addToCart(currentProduct, 1));
+      toast.success('Product added to cart!');
+    }
+  };
 
   if (loading) {
     return (
@@ -168,15 +179,15 @@ const ProductDetailPage = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-4">
-                <button className="flex-1 bg-[#23A6F0] text-white px-6 py-4 rounded hover:bg-[#1a7ab3] transition-colors">
-                  <span className="text-base">Select Options</span>
+                <button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-[#23A6F0] text-white px-6 py-4 rounded hover:bg-[#1a7ab3] transition-colors"
+                >
+                  <span className="text-base">Add to Cart</span>
                 </button>
                 <div className="flex gap-3">
                   <button className="p-4 rounded-full hover:bg-gray-100">
                     <Heart className="w-6 h-6 text-[#252B42]" />
-                  </button>
-                  <button className="p-4 rounded-full hover:bg-gray-100">
-                    <ShoppingCart className="w-6 h-6 text-[#252B42]" />
                   </button>
                   <button className="p-4 rounded-full hover:bg-gray-100">
                     <Eye className="w-6 h-6 text-[#252B42]" />
