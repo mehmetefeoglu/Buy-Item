@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useHistory } from 'react-router-dom';
 import { ChevronRight, Heart, ShoppingCart, Eye, Star, ChevronLeft } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, fetchProducts } from '../store/actions/productActions';
@@ -13,6 +13,7 @@ const defaultColors = ["#23A6F0", "#23856D", "#E77C40", "#252B42"];
 const ProductDetailPage = () => {
   const dispatch = useDispatch();
   const { productId, id } = useParams();
+  const history = useHistory();
   console.log('URL Params:', useParams()); // Tüm parametreleri görelim
   
   // Son parametreyi ID olarak kullanalım
@@ -64,6 +65,13 @@ const ProductDetailPage = () => {
     <div className="w-full">
       {/* Breadcrumb */}
       <div className="flex items-center justify-center gap-2 py-6">
+        <button 
+          onClick={() => history.goBack()}
+          className="flex items-center gap-1 text-[#23A6F0] hover:text-[#1a7ab3] transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span className="font-medium">Back</span>
+        </button>
         <Link to="/" className="text-[#252B42] hover:text-[#23A6F0] transition-colors">Home</Link>
         <ChevronRight className="w-4 h-4 text-[#BDBDBD]" />
         <Link to="/shop" className="text-[#252B42] hover:text-[#23A6F0] transition-colors">Shop</Link>
