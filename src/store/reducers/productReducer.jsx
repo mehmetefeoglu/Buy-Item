@@ -9,7 +9,8 @@ const initialState = {
   filter: '',
   fetchState: 'NOT_FETCHED',
   loading: false,
-  error: null
+  error: null,
+  currentProduct: null
 };
 
 const productReducer = (state = initialState, action) => {
@@ -81,6 +82,31 @@ const productReducer = (state = initialState, action) => {
         loading: false
       };
     case types.FETCH_PRODUCTS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload
+      };
+    case types.SET_PRODUCT_DETAIL:
+      return {
+        ...state,
+        currentProduct: action.payload,
+        loading: false
+      };
+    case types.FETCH_PRODUCT_START:
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
+    case types.FETCH_PRODUCT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        currentProduct: action.payload,
+        error: null
+      };
+    case types.FETCH_PRODUCT_FAIL:
       return {
         ...state,
         loading: false,
