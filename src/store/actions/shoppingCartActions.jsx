@@ -20,9 +20,9 @@ export const addToCart = (product, count = 1) => ({
   payload: { product, count }
 });
 
-export const updateCartItem = (productId, count) => ({
+export const updateCartItem = (productId, count, checked) => ({
   type: types.UPDATE_CART_ITEM,
-  payload: { productId, count }
+  payload: { productId, count, checked }
 });
 
 export const removeFromCart = (productId) => ({
