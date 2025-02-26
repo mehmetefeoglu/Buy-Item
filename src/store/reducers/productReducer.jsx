@@ -102,8 +102,9 @@ const productReducer = (state = initialState, action) => {
     case types.FETCH_PRODUCT_SUCCESS:
       return {
         ...state,
+        loading: false,
         currentProduct: action.payload,
-        loading: false
+        error: null
       };
     case types.FETCH_PRODUCT_FAIL:
       return {
