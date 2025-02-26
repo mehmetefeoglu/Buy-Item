@@ -6,14 +6,16 @@ import { fetchCategories, fetchProducts } from '../store/actions/productActions'
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
-  ChevronDown
+  ChevronDown, ShoppingCart
 } from 'lucide-react';
 import { headerData } from '../data/index';
 import Gravatar from 'react-gravatar';
+import CartDropdown from '../components/CartDropdown';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -21,6 +23,10 @@ const Header = () => {
   const user = useSelector(state => state.client.user);
   const categories = useSelector(state => state.product.categories);
   const loading = useSelector(state => state.product.loading);
+  const { cart } = useSelector(state => state.shoppingCart);
+  
+  // Sepetteki toplam ürün sayısı
+  const cartItemCount = cart.reduce((total, item) => total + item.count, 0);
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -42,14 +48,14 @@ const Header = () => {
     history.push('/');
   };
 
-  // Kategori tıklama işleyicisi  
-  const handleCategoryClick = (category) => { 
+  // Kategori tıklama işleyicisi
+  const handleCategoryClick = (category) => {
     dispatch(fetchProducts({
       category: category.id,
       gender: category.gender,
       filter: category.title
     }));
-    setIsShopMenuOpen(false); //TODO header da categoryler tıklandığında sıaralama yaparken tüm kategoryleri sıralıyor.  
+    setIsShopMenuOpen(false);
   };
 
   return (
@@ -227,16 +233,22 @@ const Header = () => {
               </Link>
 
               {/* Cart Icon */}
-              <Link
-                to="/cart"
-                className="p-2 text-gray-600 hover:text-primary transition-colors relative"
-                aria-label="Shopping Cart"
-              >
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
-              </Link>
+              <div className="relative">
+                <button 
+                  className="relative p-2"
+                  onClick={() => setIsCartOpen(!isCartOpen)}
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Cart Dropdown */}
+                {isCartOpen && <CartDropdown onClose={() => setIsCartOpen(false)} />}
+              </div>
 
               {/* Mobile Menu Button */}
               <button
