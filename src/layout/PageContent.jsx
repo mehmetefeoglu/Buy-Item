@@ -1,4 +1,5 @@
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Switch, Redirect, useLocation, useHistory } from 'react-router-dom';
+import { useEffect } from 'react';
 import HomePage from '../pages/HomePage';
 import ShopPage from '../pages/ShopPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
@@ -10,12 +11,32 @@ import CheckoutPage from '../pages/CheckoutPage';
 import ProfilePage from '../pages/ProfilePage';
 
 const PageContent = () => {
+  const location = useLocation();
+  const history = useHistory();
+
+  useEffect(() => {
+    // Sadece component mount olduğunda çalışacak
+    const handlePageRefresh = () => {
+      const isPageRefreshed = window.performance?.getEntriesByType('navigation')?.[0]?.type === 'reload';
+      
+      // Eğer sayfa yenilendiyse ve ana sayfada değilsek
+      if (isPageRefreshed && location.pathname !== '/') {
+        history.push('/');
+      }
+    };
+
+    // İlk yüklemede kontrol et
+    handlePageRefresh();
+  }, []); // Sadece component mount olduğunda çalışsın
+
   return (
     <main className="flex-grow">
       <Switch>
         <Route exact path="/" component={HomePage} />
-        <Route path="/shop" component={ShopPage} />
+        <Route exact path="/shop" component={ShopPage} />
+        <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
         <Route path="/product/:id" component={ProductDetailPage} />
+        <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetailPage} />
         <Route path="/signup" component={SignUpPage} />
         <Route path="/login" component={LoginPage} />
         <ProtectedRoute path="/cart" component={CartPage} />
