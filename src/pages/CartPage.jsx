@@ -1,9 +1,24 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { Minus, Plus, X } from 'lucide-react';
+import { updateCartItem, removeFromCart } from '../store/actions/shoppingCartActions';
 
 const CartPage = () => {
+  const dispatch = useDispatch();
   const { cart } = useSelector(state => state.shoppingCart);
-  const total = cart.reduce((sum, item) => sum + (item.product.price * item.count), 0);
+  
+  // Seçili ürünlerin toplam tutarı
+  const selectedTotal = cart
+    .filter(item => item.checked)
+    .reduce((sum, item) => sum + (item.product.price * item.count), 0);
+
+  // Ürün seçme/seçimi kaldırma
+  const handleToggleCheck = (productId) => {
+    const item = cart.find(item => item.product.id === productId);
+    if (item) {
+      dispatch(updateCartItem(productId, item.count, !item.checked));
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -20,45 +35,112 @@ const CartPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Cart Items - Sol 2 Sütun */}
-          <div className="md:col-span-2 space-y-4">
-            {cart.map(item => (
-              <div key={item.product.id} className="flex gap-4 p-4 border rounded">
-                <img 
-                  src={item.product.images[0].url} 
-                  alt={item.product.name}
-                  className="w-24 h-24 object-cover rounded"
-                />
-                <div className="flex-1">
-                  <h3 className="font-medium">{item.product.name}</h3>
-                  <p className="text-gray-600">${item.product.price} x {item.count}</p>
-                  <p className="font-medium">Total: ${(item.product.price * item.count).toFixed(2)}</p>
-                </div>
-              </div>
-            ))}
+        <div className="flex flex-col gap-8">
+          {/* Cart Table */}
+          <div className="w-full overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="p-4 text-left">
+                    <input 
+                      type="checkbox" 
+                      checked={cart.every(item => item.checked)}
+                      onChange={() => {
+                        const allChecked = cart.every(item => item.checked);
+                        cart.forEach(item => {
+                          dispatch(updateCartItem(item.product.id, item.count, !allChecked));
+                        });
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                  </th>
+                  <th className="p-4 text-left">Product</th>
+                  <th className="p-4 text-left">Price</th>
+                  <th className="p-4 text-left">Quantity</th>
+                  <th className="p-4 text-left">Total</th>
+                  <th className="p-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {cart.map(item => (
+                  <tr key={item.product.id} className="hover:bg-gray-50">
+                    <td className="p-4">
+                      <input 
+                        type="checkbox" 
+                        checked={item.checked}
+                        onChange={() => handleToggleCheck(item.product.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-4">
+                        <img 
+                          src={item.product.images[0].url} 
+                          alt={item.product.name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div>
+                          <h3 className="font-medium">{item.product.name}</h3>
+                          <p className="text-sm text-gray-500">{item.product.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">${item.product.price}</td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => dispatch(updateCartItem(item.product.id, Math.max(1, item.count - 1), item.checked))}
+                          className={`p-1 rounded transition-colors ${
+                            item.count > 1 
+                              ? 'text-[#E77C40] hover:bg-[#fff4ef]' 
+                              : 'text-gray-300 cursor-not-allowed'
+                          }`}
+                          disabled={item.count <= 1}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-8 text-center">{item.count}</span>
+                        <button 
+                          onClick={() => dispatch(updateCartItem(item.product.id, item.count + 1, item.checked))}
+                          className="p-1 text-[#E77C40] hover:bg-[#fff4ef] rounded transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-4">${(item.product.price * item.count).toFixed(2)}</td>
+                    <td className="p-4">
+                      <button 
+                        onClick={() => dispatch(removeFromCart(item.product.id))}
+                        className="p-1 hover:bg-gray-100 rounded text-red-500"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-gray-50">
+                <tr>
+                  <td colSpan="4" className="p-4 text-right font-medium">Selected Total:</td>
+                  <td className="p-4 font-bold">${selectedTotal.toFixed(2)}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
 
-          {/* Order Summary - Sağ Sütun */}
-          <div className="bg-gray-50 p-4 rounded h-fit">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-              <div className="border-t pt-2 font-bold flex justify-between">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-            </div>
+          {/* Continue Shopping ve Checkout Buttons */}
+          <div className="flex justify-between items-center">
+            <Link 
+              to="/shop"
+              className="px-6 py-2 border-2 border-[#23A6F0] text-[#23A6F0] rounded hover:bg-gray-50 transition-colors"
+            >
+              Continue Shopping
+            </Link>
             <Link
               to="/checkout"
-              className="block w-full bg-[#E77C40] text-white text-center py-3 rounded hover:bg-[#d16c34] transition-colors"
+              className="px-6 py-2 bg-[#E77C40] text-white rounded hover:bg-[#d16c34] transition-colors"
             >
               Proceed to Checkout
             </Link>

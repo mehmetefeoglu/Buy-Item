@@ -54,7 +54,11 @@ const shoppingCartReducer = (state = initialState, action) => {
         ...state,
         cart: state.cart.map(item =>
           item.product.id === action.payload.productId
-            ? { ...item, count: action.payload.count }
+            ? { 
+                ...item, 
+                count: action.payload.count,
+                checked: action.payload.checked !== undefined ? action.payload.checked : item.checked 
+              }
             : item
         )
       };
