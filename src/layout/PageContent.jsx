@@ -9,6 +9,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import CartPage from '../pages/CartPage';
 import CheckoutPage from '../pages/CheckoutPage';
 import ProfilePage from '../pages/ProfilePage';
+import OrdersPage from '../pages/OrdersPage';
 
 const PageContent = () => {
   const location = useLocation();
@@ -42,6 +43,7 @@ const PageContent = () => {
         <Route path="/cart" component={CartPage} />
         <Route path="/checkout" component={CheckoutPage} />
         <ProtectedRoute path="/profile" component={ProfilePage} />
+        <ProtectedRoute path="/orders" component={OrdersPage} />
         <Route path="*">
           <Redirect to="/" />
         </Route>

@@ -6,7 +6,7 @@ import { fetchCategories, fetchProducts } from '../store/actions/productActions'
 import { 
   ShoppingBag, Search, User, Menu, X, Phone,
   Mail, Instagram, Youtube, Facebook, Twitter,
-  ChevronDown, ShoppingCart
+  ChevronDown, ShoppingCart, Package, LogOut
 } from 'lucide-react';
 import { headerData } from '../data/index';
 import Gravatar from 'react-gravatar';
@@ -16,6 +16,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -179,9 +180,37 @@ const Header = () => {
             <div className="flex items-center gap-4">
               {/* User Info - Gravatar kısmı */}
               {user?.email && (
-                <div className="flex items-center gap-2">
-                  <Gravatar email={user.email} size={32} className="rounded-full" />
-                  <span className="text-sm font-medium">{user.name}</span>
+                <div className="relative ml-4">
+                  <button
+                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                  >
+                    <span>{user.email}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      <Link
+                        to="/orders"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Package className="w-4 h-4" />
+                        My Orders
+                      </Link>
+                      <button
+                        onClick={() => {
+                          dispatch(logout());
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
