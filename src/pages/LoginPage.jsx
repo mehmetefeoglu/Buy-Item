@@ -23,27 +23,34 @@ const LoginPage = () => {
       setIsLoading(true);
       const response = await api.post('/login', {
         ...values,
-        role_id: 2 // Customer role
+        role_id: 2
       });
       
       if (response.data.token) {
+        const token = response.data.token;
+        
         // Token'ı sakla
         if (rememberMe) {
-          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('token', token);
         } else {
-          sessionStorage.setItem('token', response.data.token);
+          sessionStorage.setItem('token', token);
         }
         
         // API için Authorization header'ını ayarla
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        // Kullanıcı bilgilerini store'a kaydet
-        dispatch(setUser(response.data.user));
-        
-        // Ana sayfaya yönlendir
-        history.push('/');
-        
-        toast.success('Login successful!');
+        // Kullanıcı bilgilerini al ve store'a kaydet
+        try {
+          const userResponse = await api.get('/verify');  // veya '/user/me' endpoint'i
+          dispatch(setUser(userResponse.data));
+          
+          // Başarılı mesaj ve yönlendirme
+          toast.success('Login successful!');
+          history.push('/');
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          toast.error('Login successful but failed to load user data');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
