@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { Loader2 } from "lucide-react";
-import { loginUser } from '../store/actions/clientActions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Gravatar from 'react-gravatar';
+import api from '../api/axiosInstance';
+import { toast } from 'react-hot-toast';
+import { setUser } from '../store/actions/clientActions';
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,12 +18,36 @@ const LoginPage = () => {
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
+  const onSubmit = async (values) => {
     try {
-      await dispatch(loginUser(data, rememberMe, history));
-    } catch (err) {
-      // Hata işleme toast ile clientActions'da yapılıyor
+      setIsLoading(true);
+      const response = await api.post('/login', {
+        ...values,
+        role_id: 2 // Customer role
+      });
+      
+      if (response.data.token) {
+        // Token'ı sakla
+        if (rememberMe) {
+          localStorage.setItem('token', response.data.token);
+        } else {
+          sessionStorage.setItem('token', response.data.token);
+        }
+        
+        // API için Authorization header'ını ayarla
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        
+        // Kullanıcı bilgilerini store'a kaydet
+        dispatch(setUser(response.data.user));
+        
+        // Ana sayfaya yönlendir
+        history.push('/');
+        
+        toast.success('Login successful!');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(error.response?.data?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -39,47 +65,53 @@ const LoginPage = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <input
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                  }
-                })}
-                type="email"
-                placeholder="Email"
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
+              </div>
             </div>
 
             <div>
-              <input
-                {...register("password", {
-                  required: "Password is required"
-                })}
-                type="password"
-                placeholder="Password"
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-              )}
-            </div>
-
-            <div>
-              <select
-                {...register("role_id")}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                defaultValue="2"
-              >
-                <option value="2">Customer</option>
-                <option value="3">Store</option>
-                <option value="1">Admin</option>
-              </select>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters"
+                    }
+                  })}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
@@ -101,26 +133,38 @@ const LoginPage = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#23A6F0] hover:bg-[#1a7ab3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  "Sign in"
+                  'Sign in'
                 )}
               </button>
             </div>
+          </form>
 
-            <div className="flex items-center justify-center space-x-2 mt-4">
-              <span className="text-gray-600">Create account</span>
-              <Link 
-                to="/signup" 
-                className="text-[#23A6F0] hover:text-[#1a7ab3] font-medium"
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Don't have an account?
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                to="/signup"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Register
+                Sign up
               </Link>
             </div>
-          </form>
+          </div>
         </div>
       </div>
       <ToastContainer />
