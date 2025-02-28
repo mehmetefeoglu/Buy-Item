@@ -22,8 +22,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token geçersiz veya süresi dolmuş
+    // Sadece gerçekten token geçersiz olduğunda logout yap
+    if (error.response?.status === 401 && 
+        error.response?.data?.message?.includes('token')) {
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
       window.location.href = '/login';
