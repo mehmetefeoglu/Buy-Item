@@ -182,13 +182,18 @@ const Header = () => {
               {user?.email && (
                 <div className="relative ml-4">
                   <button
-                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
                     onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
                   >
-                    <span>{user.email}</span>
+                    <Gravatar
+                      email={user.email}
+                      size={32}
+                      className="rounded-full"
+                    />
+                    <span>{user.name || user.email}</span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
-
+                  
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <Link
