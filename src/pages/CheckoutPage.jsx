@@ -43,39 +43,58 @@ const CheckoutPage = () => {
     name_on_card: ''
   });
 
+  // Form state'ini güncelleyelim
+  const [formErrors, setFormErrors] = useState({});
+
+  const cities = [
+    'Adana', 'Ankara', 'Antalya', 'Bursa', 'Denizli', 'Diyarbakır', 
+    'Eskişehir', 'Gaziantep', 'İstanbul', 'İzmir', 'Kayseri', 'Konya', 
+    'Malatya', 'Mersin', 'Samsun', 'Trabzon', 'Van'
+  ];
+
   // Toplam tutarı hesapla
   const total = cart.reduce((sum, item) => sum + (item.product.price * item.count), 0);
 
-  // Token kontrolü
+  // Token kontrolü ve veri yükleme
   useEffect(() => {
+    // Bu kısmı kaldırmıştık, geri ekleyelim
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       history.push('/login');
       return;
     }
-    
-    // API istekleri için token'ı ayarla
-    api.defaults.headers.common['Authorization'] = token;
-  }, [history]);
 
-  // Adresleri getir
-  useEffect(() => {
     const fetchData = async () => {
       try {
-        // Adresleri getir
+        setIsLoading(true);
+        
+        // Önce adresleri getir
         const addressResponse = await api.get('/user/address');
         setAddresses(addressResponse.data);
         
-        // Kartları getir
+        // Sonra kartları getir
         const cardResponse = await api.get('/user/card');
         setCards(cardResponse.data);
+
       } catch (error) {
+        console.error('Veri yükleme hatası:', error);
+        
+        // 401 kontrolünü de ekleyelim
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          sessionStorage.removeItem('token');
+          history.push('/login');
+          return;
+        }
+        
         toast.error('Bilgiler yüklenirken bir hata oluştu');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [history]);
 
   // sameAsDelivery değiştiğinde fatura adresini güncelle
   useEffect(() => {
@@ -130,9 +149,38 @@ const CheckoutPage = () => {
     setShowAddressForm(true);
   };
 
-  // Form submit işleyicisini güncelleyelim
+  // Form validasyon fonksiyonu
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    if (!formData.name.trim()) errors.name = 'Name is required';
+    if (!formData.surname.trim()) errors.surname = 'Surname is required';
+    if (!formData.phone.trim()) errors.phone = 'Phone is required';
+    if (!formData.city) errors.city = 'City is required';
+    if (!formData.district.trim()) errors.district = 'District is required';
+    if (!formData.neighborhood.trim()) errors.neighborhood = 'Neighborhood is required';
+    if (!formData.address.trim()) errors.address = 'Address is required';
+
+    // Telefon numarası formatı kontrolü
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
+      errors.phone = 'Invalid phone number';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Form submit fonksiyonunu güncelleyelim
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Please check form fields');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -253,57 +301,57 @@ const CheckoutPage = () => {
           {/* Sol Taraf - Adres ve Ödeme Bilgileri */}
           <div className="flex-1 space-y-6">
             {/* Teslimat Adresi */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold">Delivery Address</h2>
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">Delivery Address</h3>
                 <button
                   onClick={() => {
                     setShowAddressForm(true);
                     setEditingAddress(null);
                   }}
-                  className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3] text-sm sm:text-base"
+                  className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3]"
                 >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Add New Address</span>
+                  <Plus className="w-4 h-4" />
+                  <span>Add Address</span>
                 </button>
               </div>
-
-              {/* Adres Listesi */}
-              <div className="space-y-3">
-                {addresses.map(address => (
-                  <div 
-                    key={address.id} 
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors
-                      ${selectedDeliveryAddress?.id === address.id ? 'border-[#E77C40] bg-orange-50' : 'hover:border-gray-400'}`}
+              <div className="grid gap-4">
+                {addresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className={`p-4 border rounded-lg cursor-pointer ${
+                      selectedDeliveryAddress?.id === address.id ? 'border-[#E77C40] bg-orange-50' : 'border-gray-200'
+                    }`}
                     onClick={() => setSelectedDeliveryAddress(address)}
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-medium">{address.title}</h3>
+                      <div>
+                        <h4 className="font-medium">{address.title}</h4>
                         <p className="text-sm text-gray-600 mt-1">
                           {address.name} {address.surname}
                         </p>
+                        <p className="text-sm text-gray-600">{address.phone}</p>
                         <p className="text-sm text-gray-600 mt-1">
                           {address.neighborhood}, {address.district}, {address.city}
                         </p>
-                        <p className="text-sm text-gray-600 mt-1">{address.phone}</p>
+                        <p className="text-sm text-gray-600">{address.address}</p>
                       </div>
-                      <div className="flex gap-2 ml-4">
-                        <button 
+                      <div className="flex gap-2">
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditAddress(address);
                           }}
-                          className="p-1 text-gray-400 hover:text-[#23A6F0]"
+                          className="p-2 text-gray-600 hover:text-[#E77C40]"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteAddress(address.id);
                           }}
-                          className="p-1 text-gray-400 hover:text-red-500"
+                          className="p-2 text-gray-600 hover:text-red-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -315,56 +363,58 @@ const CheckoutPage = () => {
             </div>
 
             {/* Fatura Adresi */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold">Billing Address</h2>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Billing Address</h3>
+                <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={sameAsDelivery}
                     onChange={(e) => setSameAsDelivery(e.target.checked)}
-                    className="rounded border-gray-300 text-[#23A6F0] focus:ring-[#23A6F0]"
+                    className="mr-2"
                   />
-                  <span>Same as delivery address</span>
+                  <span className="text-sm">Same as delivery address</span>
                 </label>
               </div>
 
               {!sameAsDelivery && (
-                <div className="space-y-3">
-                  {addresses.map(address => (
-                    <div 
-                      key={address.id} 
-                      className={`p-4 border rounded-lg cursor-pointer transition-colors
-                        ${selectedBillingAddress?.id === address.id ? 'border-[#E77C40] bg-orange-50' : 'hover:border-gray-400'}`}
+                <div className="grid gap-4">
+                  {addresses.map((address) => (
+                    <div
+                      key={address.id}
+                      className={`p-4 border rounded-lg cursor-pointer ${
+                        selectedBillingAddress?.id === address.id ? 'border-[#E77C40] bg-orange-50' : 'border-gray-200'
+                      }`}
                       onClick={() => setSelectedBillingAddress(address)}
                     >
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="font-medium">{address.title}</h3>
+                        <div>
+                          <h4 className="font-medium">{address.title}</h4>
                           <p className="text-sm text-gray-600 mt-1">
                             {address.name} {address.surname}
                           </p>
+                          <p className="text-sm text-gray-600">{address.phone}</p>
                           <p className="text-sm text-gray-600 mt-1">
                             {address.neighborhood}, {address.district}, {address.city}
                           </p>
-                          <p className="text-sm text-gray-600 mt-1">{address.phone}</p>
+                          <p className="text-sm text-gray-600">{address.address}</p>
                         </div>
-                        <div className="flex gap-2 ml-4">
-                          <button 
+                        <div className="flex gap-2">
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditAddress(address);
                             }}
-                            className="p-1 text-gray-400 hover:text-[#23A6F0]"
+                            className="p-2 text-gray-600 hover:text-[#E77C40]"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteAddress(address.id);
                             }}
-                            className="p-1 text-gray-400 hover:text-red-500"
+                            className="p-2 text-gray-600 hover:text-red-600"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -393,82 +443,96 @@ const CheckoutPage = () => {
               </div>
 
               <div className="space-y-4">
-                {cards.map(card => (
+                {cards.map((card) => (
                   <div
                     key={card.id}
-                    className={`relative p-6 border rounded-lg cursor-pointer transition-colors
-                      ${selectedCard?.id === card.id 
-                        ? 'border-[#E77C40] bg-orange-50' 
-                        : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`p-4 border rounded-lg cursor-pointer ${
+                      selectedCard?.id === card.id ? 'border-[#E77C40] bg-orange-50' : 'border-gray-200'
+                    }`}
                     onClick={() => setSelectedCard(card)}
                   >
-                    {/* Kart Başlığı */}
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{card.name_on_card}</h3>
-                        <p className="text-sm text-gray-500 mt-1">Credit Card</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className={`w-6 h-6 ${selectedCard?.id === card.id ? 'text-[#E77C40]' : 'text-gray-400'}`} />
+                        <div>
+                          <p className="font-medium">
+                            {card.name_on_card}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            **** **** **** {card.card_no.slice(-4)}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Expires: {card.expire_month.toString().padStart(2, '0')}/{card.expire_year}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setEditingCard(card);
-                            setCardFormData(card);
-                            setShowCardForm(true);
+                            handleEditCard(card);
                           }}
-                          className="p-1.5 text-gray-400 hover:text-[#E77C40] rounded-full hover:bg-orange-50"
+                          className="p-1 text-gray-400 hover:text-gray-600"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteCard(card.id);
                           }}
-                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50"
+                          className="p-1 text-gray-400 hover:text-gray-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
-
-                    {/* Kart Detayları */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Card Number</p>
-                        <p className="text-sm font-medium">
-                          **** **** **** {card.card_no.slice(-4)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Expires</p>
-                        <p className="text-sm font-medium">
-                          {String(card.expire_month).padStart(2, '0')}/{card.expire_year}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Seçili İşareti */}
-                    {selectedCard?.id === card.id && (
-                      <div className="absolute top-4 right-4 w-5 h-5 bg-[#E77C40] rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    )}
                   </div>
                 ))}
 
-                {cards.length === 0 && (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CreditCard className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500">No saved cards yet</p>
-                    <p className="text-sm text-gray-400 mt-1">Add a new card to continue</p>
-                  </div>
-                )}
+                {/* Yeni Kart Ekleme Butonu */}
+                <button
+                  onClick={() => {
+                    setEditingCard(null);
+                    setCardFormData({
+                      card_no: '',
+                      name_on_card: '',
+                      expire_month: '',
+                      expire_year: ''
+                    });
+                    setShowCardForm(true);
+                  }}
+                  className="w-full p-4 border border-dashed rounded-lg text-gray-500 hover:border-[#E77C40] hover:text-[#E77C40] flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add New Card
+                </button>
               </div>
+
+              {/* CCV Input - Kart seçildiğinde göster */}
+              {selectedCard && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CCV
+                  </label>
+                  <input
+                    type="text"
+                    value={ccv}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 3) {
+                        setCcv(value);
+                      }
+                    }}
+                    maxLength="3"
+                    className="w-20 p-2 border rounded"
+                    placeholder="123"
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -525,26 +589,44 @@ const CheckoutPage = () => {
                   type="text"
                   placeholder="Address Title"
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
-                  className="w-full p-3 border rounded"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, title: e.target.value}));
+                    setFormErrors(prev => ({...prev, title: ''}));
+                  }}
+                  className={`w-full p-3 border rounded ${
+                    formErrors.title ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   required
                 />
+                {formErrors.title && (
+                  <p className="mt-1 text-sm text-red-500">{formErrors.title}</p>
+                )}
                 
                 <div className="flex gap-4">
                   <input
                     type="text"
                     placeholder="Name"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
-                    className="flex-1 p-3 border rounded"
+                    onChange={(e) => {
+                      setFormData(prev => ({...prev, name: e.target.value}));
+                      setFormErrors(prev => ({...prev, name: ''}));
+                    }}
+                    className={`flex-1 p-3 border rounded ${
+                      formErrors.name ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                   <input
                     type="text"
                     placeholder="Surname"
                     value={formData.surname}
-                    onChange={(e) => setFormData(prev => ({...prev, surname: e.target.value}))}
-                    className="flex-1 p-3 border rounded"
+                    onChange={(e) => {
+                      setFormData(prev => ({...prev, surname: e.target.value}));
+                      setFormErrors(prev => ({...prev, surname: ''}));
+                    }}
+                    className={`flex-1 p-3 border rounded ${
+                      formErrors.surname ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                 </div>
@@ -553,29 +635,46 @@ const CheckoutPage = () => {
                   type="tel"
                   placeholder="Phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({...prev, phone: e.target.value}))}
-                  className="w-full p-3 border rounded"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, phone: e.target.value}));
+                    setFormErrors(prev => ({...prev, phone: ''}));
+                  }}
+                  className={`w-full p-3 border rounded ${
+                    formErrors.phone ? 'border-red-500' : ''
+                  }`}
                   required
                 />
 
                 <select
                   value={formData.city}
-                  onChange={(e) => setFormData(prev => ({...prev, city: e.target.value}))}
-                  className="w-full p-3 border rounded"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, city: e.target.value}));
+                    setFormErrors(prev => ({...prev, city: ''}));
+                  }}
+                  className={`w-full p-3 border rounded ${
+                    formErrors.city ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   required
                 >
                   <option value="">Select City</option>
-                  <option value="istanbul">İstanbul</option>
-                  <option value="ankara">Ankara</option>
-                  <option value="izmir">İzmir</option>
+                  {cities.map(city => (
+                    <option key={city.toLowerCase()} value={city.toLowerCase()}>
+                      {city}
+                    </option>
+                  ))}
                 </select>
 
                 <input
                   type="text"
                   placeholder="District"
                   value={formData.district}
-                  onChange={(e) => setFormData(prev => ({...prev, district: e.target.value}))}
-                  className="w-full p-3 border rounded"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, district: e.target.value}));
+                    setFormErrors(prev => ({...prev, district: ''}));
+                  }}
+                  className={`w-full p-3 border rounded ${
+                    formErrors.district ? 'border-red-500' : ''
+                  }`}
                   required
                 />
 
@@ -583,16 +682,26 @@ const CheckoutPage = () => {
                   type="text"
                   placeholder="Neighborhood"
                   value={formData.neighborhood}
-                  onChange={(e) => setFormData(prev => ({...prev, neighborhood: e.target.value}))}
-                  className="w-full p-3 border rounded"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, neighborhood: e.target.value}));
+                    setFormErrors(prev => ({...prev, neighborhood: ''}));
+                  }}
+                  className={`w-full p-3 border rounded ${
+                    formErrors.neighborhood ? 'border-red-500' : ''
+                  }`}
                   required
                 />
 
                 <textarea
                   placeholder="Detailed Address"
                   value={formData.address}
-                  onChange={(e) => setFormData(prev => ({...prev, address: e.target.value}))}
-                  className="w-full p-3 border rounded h-24"
+                  onChange={(e) => {
+                    setFormData(prev => ({...prev, address: e.target.value}));
+                    setFormErrors(prev => ({...prev, address: ''}));
+                  }}
+                  className={`w-full p-3 border rounded h-24 ${
+                    formErrors.address ? 'border-red-500' : ''
+                  }`}
                   required
                 />
 
