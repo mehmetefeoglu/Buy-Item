@@ -28,4 +28,8 @@ export const updateCartItem = (productId, count, checked) => ({
 export const removeFromCart = (productId) => ({
   type: types.REMOVE_FROM_CART,
   payload: productId
+});
+
+export const clearCart = () => ({
+  type: 'CLEAR_CART'
 }); 

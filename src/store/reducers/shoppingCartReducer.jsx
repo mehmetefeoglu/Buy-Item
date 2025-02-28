@@ -67,6 +67,11 @@ const shoppingCartReducer = (state = initialState, action) => {
         ...state,
         cart: state.cart.filter(item => item.product.id !== action.payload)
       };
+    case 'CLEAR_CART':
+      return {
+        ...state,
+        cart: []
+      };
     default:
       return state;
   }

@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ArrowRight, CreditCard, X } from 'lucide-react';
 import api from '../api/axiosInstance';
 import { toast } from 'react-hot-toast';
+import { clearCart } from '../store/actions/shoppingCartActions';
 
 const CheckoutPage = () => {
   const history = useHistory();
@@ -45,6 +46,13 @@ const CheckoutPage = () => {
 
   // Form state'ini güncelleyelim
   const [formErrors, setFormErrors] = useState({});
+
+  // State'e cardFormErrors ekleyelim
+  const [cardFormErrors, setCardFormErrors] = useState({});
+
+  // Yeni state ekle
+  const [orderCvv, setOrderCvv] = useState('');
+  const [orderCvvError, setOrderCvvError] = useState('');
 
   const cities = [
     'Adana', 'Ankara', 'Antalya', 'Bursa', 'Denizli', 'Diyarbakır', 
@@ -121,15 +129,97 @@ const CheckoutPage = () => {
       toast.error('Please select a payment method');
       return false;
     }
+
+    if (!orderCvv) {
+      setOrderCvvError('Please enter CVV');
+      return false;
+    }
+
+    // CVV sadece 3 veya 4 haneli olabilir
+    if (!/^[0-9]{3,4}$/.test(orderCvv)) {
+      setOrderCvvError('CVV must be 3 or 4 digits');
+      return false;
+    }
+
+    // CVV sıfır olamaz
+    if (parseInt(orderCvv) === 0) {
+      setOrderCvvError('Invalid CVV');
+      return false;
+    }
+
+    if (cart.length === 0) {
+      toast.error('Your cart is empty');
+      return false;
+    }
     
     return true;
   };
 
   // Sipariş tamamlama
-  const handlePlaceOrder = () => {
-    if (canPlaceOrder()) {
-      // Sipariş tamamlama işlemleri...
-      toast.success('Order placed successfully!');
+  const handlePlaceOrder = async () => {
+    if (!canPlaceOrder()) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const orderData = {
+        address_id: selectedDeliveryAddress.id,
+        order_date: new Date().toISOString(),
+        card_no: parseInt(selectedCard.card_no),
+        card_name: selectedCard.name_on_card,
+        card_expire_month: selectedCard.expire_month,
+        card_expire_year: selectedCard.expire_year,
+        card_ccv: parseInt(orderCvv),
+        price: total,
+        products: cart.map(item => ({
+          product_id: item.product.id,
+          count: item.count,
+          detail: `${item.product.color} - ${item.product.size}`
+        }))
+      };
+
+      console.log('Order Data:', orderData); // Kontrol için
+
+      // Siparişi oluştur
+      const response = await api.post('/order', orderData);
+
+      // Backend'den gelen cevabı kontrol et
+      if (response.data.status === 'error') {
+        if (response.data.message.toLowerCase().includes('cvv') || 
+            response.data.message.toLowerCase().includes('card')) {
+          setOrderCvvError(response.data.message);
+          return;
+        }
+        throw new Error(response.data.message);
+      }
+
+      // Başarılı mesaj göster
+      toast.success('Order placed successfully! Thank you for your purchase.');
+
+      // Sepeti temizle
+      dispatch(clearCart());
+
+      // Ana sayfaya yönlendir
+      history.push('/');
+
+    } catch (error) {
+      console.error('Order error:', error);
+      console.log('Error response:', error.response); // Hata detayını görelim
+      
+      if (error.response?.data?.message) {
+        if (error.response.data.message.toLowerCase().includes('cvv') || 
+            error.response.data.message.toLowerCase().includes('card')) {
+          setOrderCvvError(error.response.data.message);
+        } else {
+          toast.error(error.response.data.message);
+        }
+      } else {
+        toast.error('Failed to place order');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -239,20 +329,72 @@ const CheckoutPage = () => {
     }
   };
 
-  // Kart formu submit
+  // Kart validasyon fonksiyonunu güncelleyelim
+  const validateCardForm = () => {
+    const errors = {};
+    
+    // Kart numarası kontrolü
+    if (!cardFormData.card_no) {
+      errors.card_no = 'Card number is required';
+    } else if (cardFormData.card_no.length !== 16) {
+      errors.card_no = 'Card number must be 16 digits';
+    }
+    
+    // İsim kontrolü
+    if (!cardFormData.name_on_card.trim()) {
+      errors.name_on_card = 'Name is required';
+    }
+    
+    // Ay kontrolü
+    if (!cardFormData.expire_month) {
+      errors.expire_month = 'Expiry month is required';
+    }
+    
+    // Yıl kontrolü
+    if (!cardFormData.expire_year) {
+      errors.expire_year = 'Expiry year is required';
+    }
+    
+    setCardFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Kart numarası formatlama fonksiyonu
+  const formatCardNumber = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers.replace(/(\d{4})(?=\d)/g, '$1 ');
+  };
+
+  // handleCardSubmit fonksiyonunu güncelleyelim
   const handleCardSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateCardForm()) {
+      toast.error('Please check card information');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // API'ye gönderilecek veriyi hazırla
+      const cardData = {
+        card_no: cardFormData.card_no,
+        expire_month: parseInt(cardFormData.expire_month),
+        expire_year: parseInt(cardFormData.expire_year),
+        name_on_card: cardFormData.name_on_card
+      };
+
+      console.log('Sending card data:', cardData); // Kontrol için eklendi
+
       if (editingCard) {
         await api.put('/user/card', {
           id: editingCard.id,
-          ...cardFormData
+          ...cardData
         });
         toast.success('Kart güncellendi');
       } else {
-        await api.post('/user/card', cardFormData);
+        await api.post('/user/card', cardData);
         toast.success('Yeni kart eklendi');
       }
 
@@ -261,10 +403,23 @@ const CheckoutPage = () => {
       setCards(response.data);
       resetCardForm();
     } catch (error) {
+      console.error('Card save error:', error); // Hata detayını görelim
       toast.error(error.response?.data?.message || 'Bir hata oluştu');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Düzenleme için kart seçildiğinde form verilerini güncelle
+  const handleEditCard = (card) => {
+    setCardFormData({
+      card_no: card.card_no || '',
+      expire_month: card.expire_month || '',
+      expire_year: card.expire_year || '',
+      name_on_card: card.name_on_card || ''
+    });
+    setEditingCard(card);
+    setShowCardForm(true);
   };
 
   // Kart silme
@@ -428,111 +583,68 @@ const CheckoutPage = () => {
 
             {/* Ödeme Yöntemi */}
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold">Payment Method</h2>
-                <button
-                  onClick={() => {
-                    setShowCardForm(true);
-                    setEditingCard(null);
-                  }}
-                  className="flex items-center gap-2 text-[#E77C40] hover:text-[#d16c34]"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="text-sm font-medium">Add New Card</span>
-                </button>
-              </div>
-
               <div className="space-y-4">
-                {cards.map((card) => (
-                  <div
-                    key={card.id}
-                    className={`p-4 border rounded-lg cursor-pointer ${
-                      selectedCard?.id === card.id ? 'border-[#E77C40] bg-orange-50' : 'border-gray-200'
-                    }`}
-                    onClick={() => setSelectedCard(card)}
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Payment Method</h3>
+                  <button
+                    onClick={() => {
+                      setShowCardForm(true);
+                      setEditingCard(null);
+                    }}
+                    className="flex items-center gap-2 text-[#23A6F0] hover:text-[#1a7ab3]"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <CreditCard className={`w-6 h-6 ${selectedCard?.id === card.id ? 'text-[#E77C40]' : 'text-gray-400'}`} />
+                    <Plus className="w-4 h-4" />
+                    <span>Add New Card</span>
+                  </button>
+                </div>
+
+                <div className="grid gap-4">
+                  {cards.map((card) => (
+                    <div
+                      key={card.id}
+                      onClick={() => setSelectedCard(card)}
+                      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                        selectedCard?.id === card.id ? 'border-[#E77C40] bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">
-                            {card.name_on_card}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            **** **** **** {card.card_no.slice(-4)}
-                          </p>
-                          <p className="text-xs text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-5 h-5 text-gray-600" />
+                            <span className="font-medium">
+                              {formatCardNumber(card.card_no)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">{card.name_on_card}</p>
+                          <p className="text-sm text-gray-600">
                             Expires: {card.expire_month.toString().padStart(2, '0')}/{card.expire_year}
                           </p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditCard(card);
-                          }}
-                          className="p-1 text-gray-400 hover:text-gray-600"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCard(card.id);
-                          }}
-                          className="p-1 text-gray-400 hover:text-gray-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCard(card);
+                            }}
+                            className="p-2 text-gray-600 hover:text-[#E77C40]"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCard(card.id);
+                            }}
+                            className="p-2 text-gray-600 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-
-                {/* Yeni Kart Ekleme Butonu */}
-                <button
-                  onClick={() => {
-                    setEditingCard(null);
-                    setCardFormData({
-                      card_no: '',
-                      name_on_card: '',
-                      expire_month: '',
-                      expire_year: ''
-                    });
-                    setShowCardForm(true);
-                  }}
-                  className="w-full p-4 border border-dashed rounded-lg text-gray-500 hover:border-[#E77C40] hover:text-[#E77C40] flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add New Card
-                </button>
-              </div>
-
-              {/* CCV Input - Kart seçildiğinde göster */}
-              {selectedCard && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CCV
-                  </label>
-                  <input
-                    type="text"
-                    value={ccv}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 3) {
-                        setCcv(value);
-                      }
-                    }}
-                    maxLength="3"
-                    className="w-20 p-2 border rounded"
-                    placeholder="123"
-                    required
-                  />
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
@@ -563,8 +675,36 @@ const CheckoutPage = () => {
                 </div>
               </div>
               
+              {/* CVV Input - Seçili kart varsa göster */}
+              {selectedCard && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Card Security Code (CVV)
+                  </label>
+                  <input
+                    type="text"
+                    value={orderCvv}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 4) {
+                        setOrderCvv(value);
+                        setOrderCvvError('');
+                      }
+                    }}
+                    className={`w-full p-3 border rounded ${
+                      orderCvvError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter CVV"
+                    maxLength="4"
+                  />
+                  {orderCvvError && (
+                    <p className="mt-1 text-sm text-red-500">{orderCvvError}</p>
+                  )}
+                </div>
+              )}
+              
               {/* Place Order butonu */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t lg:static lg:p-0 lg:bg-transparent lg:border-0">
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t lg:static lg:p-0 lg:bg-transparent lg:border-0 mt-4">
                 <button
                   onClick={handlePlaceOrder}
                   className="w-full py-3 px-6 bg-[#E77C40] text-white rounded-full hover:bg-[#d16c34] transition-colors"
@@ -749,18 +889,24 @@ const CheckoutPage = () => {
                   </label>
                   <input
                     type="text"
-                    value={cardFormData.card_no}
+                    value={formatCardNumber(cardFormData.card_no)}
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       if (value.length <= 16) {
                         setCardFormData(prev => ({...prev, card_no: value}));
+                        setCardFormErrors(prev => ({...prev, card_no: ''}));
                       }
                     }}
-                    className="w-full p-3 border rounded"
+                    className={`w-full p-3 border rounded ${
+                      cardFormErrors.card_no ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="1234 5678 9012 3456"
-                    maxLength="16"
+                    maxLength="19"
                     required
                   />
+                  {cardFormErrors.card_no && (
+                    <p className="mt-1 text-sm text-red-500">{cardFormErrors.card_no}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -770,11 +916,19 @@ const CheckoutPage = () => {
                   <input
                     type="text"
                     value={cardFormData.name_on_card}
-                    onChange={(e) => setCardFormData(prev => ({...prev, name_on_card: e.target.value}))}
-                    className="w-full p-3 border rounded"
+                    onChange={(e) => {
+                      setCardFormData(prev => ({...prev, name_on_card: e.target.value}));
+                      setCardFormErrors(prev => ({...prev, name_on_card: ''}));
+                    }}
+                    className={`w-full p-3 border rounded ${
+                      cardFormErrors.name_on_card ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="John Doe"
                     required
                   />
+                  {cardFormErrors.name_on_card && (
+                    <p className="mt-1 text-sm text-red-500">{cardFormErrors.name_on_card}</p>
+                  )}
                 </div>
                 
                 <div className="flex gap-4">
@@ -784,8 +938,13 @@ const CheckoutPage = () => {
                     </label>
                     <select
                       value={cardFormData.expire_month}
-                      onChange={(e) => setCardFormData(prev => ({...prev, expire_month: Number(e.target.value)}))}
-                      className="w-full p-3 border rounded"
+                      onChange={(e) => {
+                        setCardFormData(prev => ({...prev, expire_month: Number(e.target.value)}));
+                        setCardFormErrors(prev => ({...prev, expire_month: ''}));
+                      }}
+                      className={`w-full p-3 border rounded ${
+                        cardFormErrors.expire_month ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       required
                     >
                       <option value="">Month</option>
@@ -795,6 +954,9 @@ const CheckoutPage = () => {
                         </option>
                       ))}
                     </select>
+                    {cardFormErrors.expire_month && (
+                      <p className="mt-1 text-sm text-red-500">{cardFormErrors.expire_month}</p>
+                    )}
                   </div>
                   
                   <div className="w-1/2">
@@ -803,8 +965,13 @@ const CheckoutPage = () => {
                     </label>
                     <select
                       value={cardFormData.expire_year}
-                      onChange={(e) => setCardFormData(prev => ({...prev, expire_year: Number(e.target.value)}))}
-                      className="w-full p-3 border rounded"
+                      onChange={(e) => {
+                        setCardFormData(prev => ({...prev, expire_year: Number(e.target.value)}));
+                        setCardFormErrors(prev => ({...prev, expire_year: ''}));
+                      }}
+                      className={`w-full p-3 border rounded ${
+                        cardFormErrors.expire_year ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       required
                     >
                       <option value="">Year</option>
@@ -812,6 +979,9 @@ const CheckoutPage = () => {
                         <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
+                    {cardFormErrors.expire_year && (
+                      <p className="mt-1 text-sm text-red-500">{cardFormErrors.expire_year}</p>
+                    )}
                   </div>
                 </div>
 
