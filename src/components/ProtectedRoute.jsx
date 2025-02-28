@@ -3,12 +3,13 @@ import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
   const user = useSelector(state => state.client.user);
-  
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
   return (
     <Route
       {...rest}
       render={props =>
-        user?.email ? (
+        token ? (
           <Component {...props} />
         ) : (
           <Redirect
