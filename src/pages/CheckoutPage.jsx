@@ -65,37 +65,54 @@ const CheckoutPage = () => {
 
   // Token kontrolü ve veri yükleme
   useEffect(() => {
-    // Bu kısmı kaldırmıştık, geri ekleyelim
+    // Token kontrolü
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       history.push('/login');
+      toast.error('Please login to continue checkout');
       return;
     }
 
+    // Component mount olduğunda state'leri sıfırla
+    setSelectedDeliveryAddress(null);
+    setSelectedBillingAddress(null);
+    setSelectedCard(null);
+    setSameAsDelivery(true);
+    
+    // Form state'lerini temizle
+    setCardFormData({
+      card_no: '',
+      expire_month: '',
+      expire_year: '',
+      name_on_card: ''
+    });
+
+    // Adres ve kart verilerini getir
     const fetchData = async () => {
       try {
         setIsLoading(true);
         
-        // Önce adresleri getir
+        // Adresleri getir
         const addressResponse = await api.get('/user/address');
-        setAddresses(addressResponse.data);
+        setAddresses(addressResponse.data || []);
         
-        // Sonra kartları getir
+        // Kartları getir
         const cardResponse = await api.get('/user/card');
-        setCards(cardResponse.data);
+        setCards(cardResponse.data || []);
 
       } catch (error) {
         console.error('Veri yükleme hatası:', error);
         
-        // 401 kontrolünü de ekleyelim
+        // 401 kontrolü
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           sessionStorage.removeItem('token');
           history.push('/login');
+          toast.error('Please login to continue checkout');
           return;
         }
         
-        toast.error('Bilgiler yüklenirken bir hata oluştu');
+        toast.error('Failed to load data');
       } finally {
         setIsLoading(false);
       }
@@ -103,6 +120,14 @@ const CheckoutPage = () => {
 
     fetchData();
   }, [history]);
+
+  // Sepet boşsa ana sayfaya yönlendir
+  useEffect(() => {
+    if (cart.length === 0) {
+      history.push('/');
+      toast.error('Your cart is empty');
+    }
+  }, [cart, history]);
 
   // sameAsDelivery değiştiğinde fatura adresini güncelle
   useEffect(() => {
