@@ -10,25 +10,30 @@ import CartPage from '../pages/CartPage';
 import CheckoutPage from '../pages/CheckoutPage';
 import ProfilePage from '../pages/ProfilePage';
 import OrdersPage from '../pages/OrdersPage';
+import api from '../api/axiosInstance';
 
 const PageContent = () => {
   const location = useLocation();
   const history = useHistory();
 
   useEffect(() => {
-    // Sadece component mount olduğunda çalışacak
-    const handlePageRefresh = () => {
-      const isPageRefreshed = window.performance?.getEntriesByType('navigation')?.[0]?.type === 'reload';
+    // Her sayfa yüklendiğinde token kontrolü yap
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
+    if (token) {
+      // Token varsa Bearer prefix'i ile ayarla
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      // Token yoksa header'ı temizle
+      delete api.defaults.headers.common['Authorization'];
       
-      // Eğer sayfa yenilendiyse ve ana sayfada değilsek
-      if (isPageRefreshed && location.pathname !== '/') {
-        history.push('/');
+      // Public rotalar hariç login'e yönlendir
+      const publicRoutes = ['/login', '/register', '/'];
+      if (!publicRoutes.includes(window.location.pathname)) {
+        history.push('/login');
       }
-    };
-
-    // İlk yüklemede kontrol et
-    handlePageRefresh();
-  }, []); // Sadece component mount olduğunda çalışsın
+    }
+  }, [history]);
 
   return (
     <main className="flex-grow">
