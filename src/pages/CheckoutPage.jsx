@@ -65,53 +65,57 @@ const CheckoutPage = () => {
 
   // Token kontrolü ve veri yükleme
   useEffect(() => {
+    // Component mount olduğunda state'leri sıfırla
+    const cleanupStates = () => {
+      setSelectedDeliveryAddress(null);
+      setSelectedBillingAddress(null);
+      setSelectedCard(null);
+      setSameAsDelivery(true);
+      setAddresses([]);
+      setCards([]);
+      
+      // Form state'lerini temizle
+      setCardFormData({
+        card_no: '',
+        expire_month: '',
+        expire_year: '',
+        name_on_card: ''
+      });
+    };
+
+    // Sayfa yüklendiğinde temizle
+    cleanupStates();
+
     // Token kontrolü
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       history.push('/login');
-      toast.error('Please login to continue checkout');
       return;
     }
-
-    // Component mount olduğunda state'leri sıfırla
-    setSelectedDeliveryAddress(null);
-    setSelectedBillingAddress(null);
-    setSelectedCard(null);
-    setSameAsDelivery(true);
-    
-    // Form state'lerini temizle
-    setCardFormData({
-      card_no: '',
-      expire_month: '',
-      expire_year: '',
-      name_on_card: ''
-    });
 
     // Adres ve kart verilerini getir
     const fetchData = async () => {
       try {
         setIsLoading(true);
         
-        // Adresleri getir
-        const addressResponse = await api.get('/user/address');
+        // Adresleri getir - user_id ile filtrele
+        const addressResponse = await api.get('/user/address', {
+          params: {
+            user_id: user.id  // Redux'tan gelen user bilgisini kullan
+          }
+        });
         setAddresses(addressResponse.data || []);
         
-        // Kartları getir
-        const cardResponse = await api.get('/user/card');
+        // Kartları getir - user_id ile filtrele
+        const cardResponse = await api.get('/user/card', {
+          params: {
+            user_id: user.id  // Redux'tan gelen user bilgisini kullan
+          }
+        });
         setCards(cardResponse.data || []);
 
       } catch (error) {
         console.error('Veri yükleme hatası:', error);
-        
-        // 401 kontrolü
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          sessionStorage.removeItem('token');
-          history.push('/login');
-          toast.error('Please login to continue checkout');
-          return;
-        }
-        
         toast.error('Failed to load data');
       } finally {
         setIsLoading(false);
@@ -119,7 +123,12 @@ const CheckoutPage = () => {
     };
 
     fetchData();
-  }, [history]);
+
+    // Component unmount olduğunda temizle
+    return () => {
+      cleanupStates();
+    };
+  }, [history, user.id]);
 
   // Sepet boşsa ana sayfaya yönlendir
   useEffect(() => {
